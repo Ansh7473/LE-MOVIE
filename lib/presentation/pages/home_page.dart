@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
         _buildHorizontalList(context, homeProv.trendingMovies,
             isTv: false, isDesktop: isDesktop),
         const SizedBox(height: 40),
-        _buildSectionTitle('Top Rated TV Shows'),
+        _buildSectionTitle('Trending TV Shows'),
         const SizedBox(height: 15),
         _buildHorizontalList(context, homeProv.topRatedTV,
             isTv: true, isDesktop: isDesktop),

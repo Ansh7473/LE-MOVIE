@@ -67,7 +67,7 @@ class HomeProvider extends ChangeNotifier {
       _trendingMovies = results[0];
       _trendingTV = results[1];
       _popularMovies = results[2];
-      _popularTV = results[3];
+      _popularTVShows = results[3];
       _upcomingMovies = results[4];
       _nowPlayingMovies = results[5];
       _topRatedMovies = results[6];
@@ -93,7 +93,7 @@ class HomeProvider extends ChangeNotifier {
     if (_popularTV.isNotEmpty) return;
     _isLoadingCategory = true;
     notifyListeners();
-    _popularTV = await _movieService.getPopularTV(language: _currentLanguage);
+    _popularTVShows = await _movieService.getPopularTV(language: _currentLanguage);
     _isLoadingCategory = false;
     notifyListeners();
   }

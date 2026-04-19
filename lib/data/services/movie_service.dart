@@ -255,6 +255,68 @@ class MovieService {
     }
   }
 
+  // ─── New list endpoints ────────────────────────────────────────────────────
+  Future<List<MovieModel>> getUpcomingMovies({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/movie/upcoming',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Upcoming Movies Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<MovieModel>> getNowPlayingMovies({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/movie/now_playing',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Now Playing Movies Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<MovieModel>> getTopRatedMovies({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/movie/top_rated',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Top Rated Movies Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<MovieModel>> getTopRatedTV({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/tv/top_rated',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Top Rated TV Error: $e');
+      return [];
+    }
+  }
+
+  
   // ─── 10. Additional Movie & TV Lists ─────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getGenres(bool isTv, {String language = 'en-US'}) async {
     try {
