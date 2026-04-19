@@ -306,6 +306,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       }),
                     ] else if (!streamProv.isLoading)
                       _buildNoStreams(),
+                  ],
                 ),
               ),
             ),
