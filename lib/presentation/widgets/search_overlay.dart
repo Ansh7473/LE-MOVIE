@@ -168,6 +168,8 @@ class SearchOverlay extends StatelessWidget {
                 ),
         ),
       ),
+      ),
+      ),
     );
   }
 }
