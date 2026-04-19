@@ -25,6 +25,9 @@ class HomeProvider extends ChangeNotifier {
   List<MovieModel> _topRatedMovies = [];
   List<MovieModel> get topRatedMovies => _topRatedMovies;
 
+  List<MovieModel> _popularTV = [];
+  List<MovieModel> get popularTV => _popularTV;
+
   List<MovieModel> _topRatedTV = [];
   List<MovieModel> get topRatedTV => _topRatedTV;
 
@@ -67,7 +70,7 @@ class HomeProvider extends ChangeNotifier {
       _trendingMovies = results[0];
       _trendingTV = results[1];
       _popularMovies = results[2];
-      _popularTVShows = results[3];
+      _popularTV = results[3];
       _upcomingMovies = results[4];
       _nowPlayingMovies = results[5];
       _topRatedMovies = results[6];
@@ -93,7 +96,7 @@ class HomeProvider extends ChangeNotifier {
     if (_popularTV.isNotEmpty) return;
     _isLoadingCategory = true;
     notifyListeners();
-    _popularTVShows = await _movieService.getPopularTV(language: _currentLanguage);
+    _popularTV = await _movieService.getPopularTV(language: _currentLanguage);
     _isLoadingCategory = false;
     notifyListeners();
   }
