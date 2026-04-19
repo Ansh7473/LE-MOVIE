@@ -35,7 +35,7 @@ class _DetailsPageState extends State<DetailsPage> {
         slivers: [
           // ── App Bar ──────────────────────────────────────────────────────
           SliverAppBar(
-            backgroundColor: const Color(0xFF0F0F0F),
+            backgroundColor: const Color(0xFF0F0F0F).withOpacity(0.9),
             expandedHeight: 60,
             pinned: true,
             leading: IconButton(
@@ -82,11 +82,14 @@ class _DetailsPageState extends State<DetailsPage> {
             SliverToBoxAdapter(child: _buildShimmer())
           else
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
 
                     // ── Season Selector (TV only) ─────────────────────────
                     if (widget.isTv && streamProv.currentTVDetails != null) ...[
@@ -140,11 +143,11 @@ class _DetailsPageState extends State<DetailsPage> {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 5,
-                          childAspectRatio: 1.6,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 80,
+                          childAspectRatio: 1.5,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
                         ),
                         itemCount: streamProv.currentEpisodes.length,
                         itemBuilder: (context, i) {
@@ -306,6 +309,7 @@ class _DetailsPageState extends State<DetailsPage> {
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

@@ -19,9 +19,12 @@ class SearchOverlay extends StatelessWidget {
 
     return Positioned(
       top: 140,
-      left: 20,
-      right: 20,
-      child: Material(
+      left: 0,
+      right: 0,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Material(
         color: Colors.transparent,
         child: Container(
           constraints: const BoxConstraints(maxHeight: 420),
