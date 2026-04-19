@@ -217,24 +217,24 @@ class _DetailsPageState extends State<DetailsPage> {
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.only(bottom: 10),
+                            margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color(0xFFE50914).withOpacity(0.15)
-                                  : const Color(0xFF1E1E2E),
+                                  : Colors.white.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFFE50914).withOpacity(0.6)
-                                    : Colors.white12,
+                                    ? const Color(0xFFE50914).withOpacity(0.8)
+                                    : Colors.white10,
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFFE50914).withOpacity(0.2),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
+                                        color: const Color(0xFFE50914).withOpacity(0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
                                       )
                                     ]
                                   : [],
@@ -242,59 +242,74 @@ class _DetailsPageState extends State<DetailsPage> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 44,
-                                  height: 44,
+                                  width: 46,
+                                  height: 46,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE50914).withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: isSelected 
+                                      ? const Color(0xFFE50914).withOpacity(0.2)
+                                      : Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected ? const Color(0xFFE50914).withOpacity(0.4) : Colors.transparent,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.play_circle_fill,
-                                    color: Color(0xFFE50914),
-                                    size: 26,
+                                  child: Icon(
+                                    Icons.bolt_rounded,
+                                    color: isSelected ? const Color(0xFFE50914) : Colors.white60,
+                                    size: 24,
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         s.language,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        'HD • Fast Stream • Tap to Play',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.white.withOpacity(0.4),
-                                        ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.hd_rounded, size: 14, color: Colors.blue.shade300),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Ultra HD 4K • Direct Stream',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white.withOpacity(0.4),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
+                                      horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE50914),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: isSelected ? const Color(0xFFE50914) : Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     children: [
-                                      Icon(Icons.play_arrow,
-                                          size: 14, color: Colors.white),
-                                      SizedBox(width: 4),
+                                      Icon(Icons.play_arrow_rounded,
+                                          size: 16, color: isSelected ? Colors.white : Colors.white70),
+                                      const SizedBox(width: 4),
                                       Text('PLAY',
                                           style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w900,
+                                            color: isSelected ? Colors.white : Colors.white70,
+                                            letterSpacing: 0.5,
                                           )),
                                     ],
                                   ),
