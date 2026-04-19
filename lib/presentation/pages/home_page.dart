@@ -156,8 +156,8 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (homeProv.featuredItem != null)
-          _buildHeroSection(context, homeProv.featuredItem!, isDesktop),
+        if (homeProv.trendingMovies.isNotEmpty)
+          HeroCarousel(items: homeProv.trendingMovies.take(5).toList(), isDesktop: isDesktop),
         const SizedBox(height: 40),
         _buildSectionTitle('Trending Movies'),
         const SizedBox(height: 15),
@@ -539,48 +539,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeroSection(BuildContext context, dynamic item, bool isDesktop) {
-    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
-      child: Container(
-        height: isDesktop ? 450 : 300,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          image: DecorationImage(image: NetworkImage(item.fullBackdropPath), fit: BoxFit.cover, alignment: Alignment.topCenter),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 10))],
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: const LinearGradient(colors: [Colors.black87, Colors.black45, Colors.transparent], begin: Alignment.bottomCenter, end: Alignment.topCenter),
-          ),
-          padding: EdgeInsets.all(isDesktop ? 40 : 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: const Color(0xFFE50914), borderRadius: BorderRadius.circular(3)), child: const Text('Trending #1', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900))) ]),
-              const SizedBox(height: 12),
-              SizedBox(width: isDesktop ? 600 : double.infinity, child: Text(item.title, style: TextStyle(fontSize: isDesktop ? 40 : 28, fontWeight: FontWeight.w900, letterSpacing: -0.5))),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.play_arrow, color: Colors.blue),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: isDesktop ? 18 : 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
-                    label: Text('Play Now', style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold, fontSize: isDesktop ? 16 : 14)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildHorizontalList(BuildContext context, List items, {required bool isTv, required bool isDesktop}) {
     final double cardWidth = isDesktop ? 150 : 120;
     final double cardHeight = isDesktop ? 225 : 180;
@@ -633,4 +591,143 @@ class _HomePageState extends State<HomePage> {
   Widget _buildShimmerHero(bool isDesktop) => Shimmer.fromColors(baseColor: Colors.white10, highlightColor: Colors.white24, child: Container(height: isDesktop ? 450 : 300, width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))));
   Widget _buildShimmerList(bool isDesktop) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Shimmer.fromColors(baseColor: Colors.white10, highlightColor: Colors.white24, child: Container(width: 150, height: 20, color: Colors.white)), const SizedBox(height: 15), SizedBox(height: 220, child: ListView.builder(scrollDirection: Axis.horizontal, itemCount: 8, itemBuilder: (_, __) => Padding(padding: const EdgeInsets.only(right: 15), child: Shimmer.fromColors(baseColor: Colors.white10, highlightColor: Colors.white24, child: Container(width: 130, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)))))))]);
   Widget _buildShimmerGrid() => GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: 20, gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 200, childAspectRatio: 0.65, crossAxisSpacing: 16, mainAxisSpacing: 24), itemBuilder: (_, __) => Shimmer.fromColors(baseColor: Colors.white10, highlightColor: Colors.white24, child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)))));
+}
+
+// ─── Animated Auto-Sliding Hero Carousel ──────────────────────────────────────
+class HeroCarousel extends StatefulWidget {
+  final List items;
+  final bool isDesktop;
+
+  const HeroCarousel({super.key, required this.items, required this.isDesktop});
+
+  @override
+  State<HeroCarousel> createState() => _HeroCarouselState();
+}
+
+class _HeroCarouselState extends State<HeroCarousel> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    Future.delayed(const Duration(seconds: 6), () {
+      if (!mounted) return;
+      if (_pageController.hasClients) {
+        final nextPage = (_currentPage + 1) % widget.items.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.fastOutSlowIn,
+        );
+      }
+      _startAutoSlide(); // Loop the timer
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.items.isEmpty) return const SizedBox.shrink();
+    
+    return Container(
+      height: widget.isDesktop ? 450 : 300,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 10))],
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (idx) => setState(() => _currentPage = idx),
+              itemCount: widget.items.length,
+              itemBuilder: (context, index) {
+                final item = widget.items[index];
+                return GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: item.fullBackdropPath,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        placeholder: (context, url) => Container(color: Colors.white10),
+                      ),
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.black87, Colors.black45, Colors.transparent], 
+                            begin: Alignment.bottomCenter, 
+                            end: Alignment.topCenter
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(widget.isDesktop ? 40 : 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: const Color(0xFFE50914), borderRadius: BorderRadius.circular(3)), child: Text('Trending #${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900))) ]),
+                            const SizedBox(height: 12),
+                            SizedBox(width: widget.isDesktop ? 600 : double.infinity, child: Text(item.title, style: TextStyle(fontSize: widget.isDesktop ? 40 : 28, fontWeight: FontWeight.w900, letterSpacing: -0.5))),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.play_arrow, color: Colors.blue),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: EdgeInsets.symmetric(horizontal: widget.isDesktop ? 24 : 16, vertical: widget.isDesktop ? 18 : 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
+                                  label: Text('Play Now', style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold, fontSize: widget.isDesktop ? 16 : 14)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Page Indicators
+          Positioned(
+            bottom: 20,
+            right: 30,
+            child: Row(
+              children: List.generate(widget.items.length, (index) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 6,
+                  width: _currentPage == index ? 24 : 6,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index ? const Color(0xFFE50914) : Colors.white38,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
