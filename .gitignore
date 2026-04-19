@@ -46,3 +46,17 @@ app.*.map.json
 
 # Large Metadata Files
 *.har
+
+# Wrangler local cache
+.wrangler/
+
+# Temp analysis / scraping scripts
+extract_har.py
+extract_headers.py
+extract_vidsrc.py
+analyze_har_details.py
+analyze_har_vidsrc.py
+vidsrc_response.html
+scrapww2 fmovies.txt
+analyze_vidsrc.py
+implementation_plan_fmovies_scraping.md

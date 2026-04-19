@@ -8,40 +8,61 @@ import '../models/stream_model.dart';
 class MovieService {
   final Dio _dio = Dio();
 
-  // Base URLs
-  static const String _tmdbBaseUrl = 'https://api.themoviedb.org/3';
-  static const String _searchUrl = 'https://api.themoviedb.org/3/search/multi';
-  static const String _streamBaseUrl = 'https://multilang-api.rgshows.ru';
+  // ─── New Endpoints (fmovies infrastructure) ────────────────────────────────
+  static const String _contentBaseUrl = 'https://db.videasy.net/3';
   static const String _apiKey = '4c1eef5a8d388386187a3426bc2345be';
 
-  // Helper for spoofing headers (still used for streams)
-  Options _getOptions(String url) {
-    String referer = 'https://www.rgshows.ru/';
-    String origin = 'https://www.rgshows.ru';
-    
-    if (url.contains('videasy')) {
-      referer = 'https://player.videasy.net/';
-      origin = 'https://player.videasy.net';
-    }
+  // vidsrc.wtf embed URL builders
+  static String movieEmbedUrl(int id) =>
+      'https://www.vidsrc.wtf/api/1/movie/?id=$id&color=215fb3';
 
-    return Options(
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-        'Referer': referer,
-        'Origin': origin,
-        'Accept': 'application/json, text/plain, */*',
-      },
-    );
-  }
+  static String tvEmbedUrl(int id, int season, int episode) =>
+      'https://www.vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode&color=215fb3';
 
-  // 1. Smart Search Suggestions
+  // ─── Headers (extracted exactly from HTTP Toolkit HAR capture) ─────────────
+
+  // Used for all db.videasy.net content API calls
+  // Matches the actual cross-site fetch that ww2-fmovies.com sends
+  Options get _contentOptions => Options(headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+        'sec-ch-ua':
+            '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'Accept': '*/*',
+        'Origin': 'https://ww2-fmovies.com',
+        'Referer': 'https://ww2-fmovies.com/',
+        'Sec-Fetch-Site': 'cross-site',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+      });
+
+  // Used when the player page itself makes internal requests to vidsrc.wtf
+  Options get _vidsrcOptions => Options(headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+        'sec-ch-ua':
+            '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'Accept': '*/*',
+        'Origin': 'https://www.vidsrc.wtf',
+        'Referer': 'https://www.vidsrc.wtf/',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Storage-Access': 'active',
+      });
+
+  // ─── 1. Smart Search ───────────────────────────────────────────────────────
   Future<List<MovieModel>> searchItems(String query) async {
     try {
       final response = await _dio.get(
-        _searchUrl, 
-        queryParameters: {'api_key': _apiKey, 'query': query, 'language': 'en'},
+        '$_contentBaseUrl/search/multi',
+        queryParameters: {'api_key': _apiKey, 'query': query},
+        options: _contentOptions,
       );
-      
       final List results = response.data['results'] ?? [];
       return results.map((item) => MovieModel.fromJson(item)).toList();
     } catch (e) {
@@ -50,11 +71,14 @@ class MovieService {
     }
   }
 
-  // 2. TV Show Details
+  // ─── 2. TV Show Details ────────────────────────────────────────────────────
   Future<TVDetailsModel?> getTVDetails(int id) async {
     try {
-      final url = '$_tmdbBaseUrl/tv/$id';
-      final response = await _dio.get(url, queryParameters: {'api_key': _apiKey});
+      final response = await _dio.get(
+        '$_contentBaseUrl/tv/$id',
+        queryParameters: {'api_key': _apiKey},
+        options: _contentOptions,
+      );
       return TVDetailsModel.fromJson(response.data);
     } catch (e) {
       print('TV Details Error: $e');
@@ -62,11 +86,14 @@ class MovieService {
     }
   }
 
-  // 3. Episodes per Season
+  // ─── 3. Episodes per Season ────────────────────────────────────────────────
   Future<List<EpisodeModel>> getSeasonEpisodes(int tvId, int seasonNum) async {
     try {
-      final url = '$_tmdbBaseUrl/tv/$tvId/season/$seasonNum';
-      final response = await _dio.get(url, queryParameters: {'api_key': _apiKey});
+      final response = await _dio.get(
+        '$_contentBaseUrl/tv/$tvId/season/$seasonNum',
+        queryParameters: {'api_key': _apiKey},
+        options: _contentOptions,
+      );
       final List episodes = response.data['episodes'] ?? [];
       return episodes.map((e) => EpisodeModel.fromJson(e)).toList();
     } catch (e) {
@@ -75,42 +102,48 @@ class MovieService {
     }
   }
 
-  // 4. Streaming Links
+  // ─── 4. Streaming Links (vidsrc.wtf embeds) ────────────────────────────────
+  // Returns a list with multiple server options using the vidsrc.wtf embed API
   Future<List<StreamModel>> getStreams(int id, int season, int episode) async {
     try {
-      final path = (season == 0 && episode == 0) 
-          ? '$_streamBaseUrl/movie/$id' 
-          : '$_streamBaseUrl/tv/$id/$season/$episode';
-          
-      final response = await _dio.get(path, options: _getOptions(path));
-      final List results = response.data['streams'] ?? [];
-      
-      return results.map((s) {
-        final stream = StreamModel.fromJson(s);
-        final bool isIframe = stream.url.contains('vidsrc') || 
-                            stream.url.contains('player') || 
-                            !stream.url.contains('.m3u8');
-        
-        return StreamModel(
-          language: stream.language,
-          url: stream.url,
-          headers: stream.headers,
-          isIframe: isIframe,
-        );
-      }).toList();
+      final bool isMovie = season == 0 && episode == 0;
+
+      // Build embed URLs for each server (server 1 and server 2)
+      final String server1 = isMovie
+          ? 'https://www.vidsrc.wtf/api/1/movie/?id=$id&color=215fb3'
+          : 'https://www.vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode&color=215fb3';
+
+      final String server2 = isMovie
+          ? 'https://www.vidsrc.wtf/api/2/movie/?id=$id&color=215fb3'
+          : 'https://www.vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3';
+
+      return [
+        StreamModel(
+          language: 'Server 1',
+          url: server1,
+          headers: {'Referer': 'https://ww2-fmovies.com/'},
+          isIframe: true,
+        ),
+        StreamModel(
+          language: 'Server 2',
+          url: server2,
+          headers: {'Referer': 'https://ww2-fmovies.com/'},
+          isIframe: true,
+        ),
+      ];
     } catch (e) {
       print('Stream Error: $e');
       return [];
     }
   }
 
-  // 5. Trending Movies
+  // ─── 5. Trending Movies ────────────────────────────────────────────────────
   Future<List<MovieModel>> getTrendingMovies() async {
     try {
-      final url = '$_tmdbBaseUrl/trending/movie/week';
       final response = await _dio.get(
-        url, 
+        '$_contentBaseUrl/trending/movie/week',
         queryParameters: {'api_key': _apiKey, 'language': 'en'},
+        options: _contentOptions,
       );
       final List results = response.data['results'] ?? [];
       return results.map((m) => MovieModel.fromJson(m)).toList();
@@ -120,13 +153,13 @@ class MovieService {
     }
   }
 
-  // 6. Trending TV Shows
+  // ─── 6. Trending TV Shows ──────────────────────────────────────────────────
   Future<List<MovieModel>> getTrendingTV() async {
     try {
-      final url = '$_tmdbBaseUrl/trending/tv/week';
       final response = await _dio.get(
-        url, 
+        '$_contentBaseUrl/trending/tv/week',
         queryParameters: {'api_key': _apiKey, 'language': 'en'},
+        options: _contentOptions,
       );
       final List results = response.data['results'] ?? [];
       return results.map((m) => MovieModel.fromJson(m)).toList();
@@ -136,11 +169,14 @@ class MovieService {
     }
   }
 
-  // 7. Movie Details
+  // ─── 7. Movie Details ──────────────────────────────────────────────────────
   Future<MovieModel?> getMovieDetails(int id) async {
     try {
-      final url = '$_tmdbBaseUrl/movie/$id';
-      final response = await _dio.get(url, queryParameters: {'api_key': _apiKey});
+      final response = await _dio.get(
+        '$_contentBaseUrl/movie/$id',
+        queryParameters: {'api_key': _apiKey},
+        options: _contentOptions,
+      );
       return MovieModel.fromJson(response.data);
     } catch (e) {
       print('Movie Details Error: $e');
