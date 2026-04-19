@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build All Platforms
 
 on:
   push:
@@ -7,12 +7,10 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ─── Android APK ────────────────────────────────────────────────────────────
   build-android:
     runs-on: ubuntu-latest
-    name: Build & Release APK
-
-    permissions:
-      contents: write
+    name: Android APK
 
     steps:
       - name: Checkout code
@@ -35,42 +33,141 @@ jobs:
         run: flutter pub get
 
       - name: Build APK (release)
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  # ─── Windows EXE ────────────────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    name: Windows Build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows (release)
+        run: flutter build windows --release
+
+      - name: Create ZIP archive
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath LE-MOVIE-Windows.zip
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: LE-MOVIE-Windows.zip
+
+  # ─── macOS App ──────────────────────────────────────────────────────────────
+  build-macos:
+    runs-on: macos-latest
+    name: macOS Build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS (release)
+        run: flutter build macos --release
+
+      - name: Create ZIP archive
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r "$GITHUB_WORKSPACE/LE-MOVIE-macOS.zip" "le_movie.app"
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: LE-MOVIE-macOS.zip
+
+  # ─── Create GitHub Release ─────────────────────────────────────────────────
+  release:
+    runs-on: ubuntu-latest
+    name: Publish Release
+    needs: [build-android, build-windows, build-macos]
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename artifacts
+        run: |
+          mv artifacts/android-apk/app-release.apk artifacts/LE-MOVIE-Android.apk
+          mv artifacts/windows-build/LE-MOVIE-Windows.zip artifacts/LE-MOVIE-Windows.zip
+          mv artifacts/macos-build/LE-MOVIE-macOS.zip artifacts/LE-MOVIE-macOS.zip
 
       - name: Get version
         id: version
         run: |
           VERSION=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}' | cut -d'+' -f1)
           BUILD=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}' | cut -d'+' -f2)
+          SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "build=$BUILD" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION+$BUILD" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION-$SHA" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: "LE MOVIE ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})"
+          name: "LE MOVIE ${{ steps.version.outputs.version }}"
           body: |
-            ## LE MOVIE - Android Release
+            ## 🎬 LE MOVIE — Multi-Platform Release
 
             **Version**: ${{ steps.version.outputs.version }}
-            **Build**: ${{ steps.version.outputs.build }}
 
-            ### Download
-            - `app-arm64-v8a-release.apk` — Modern phones (ARM64, recommended)
-            - `app-armeabi-v7a-release.apk` — Older phones (ARM32)
-            - `app-x86_64-release.apk` — Emulators / x86 devices
+            ### Downloads
 
-            ### What's Included
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | 🤖 Android | `LE-MOVIE-Android.apk` | Install directly on any Android 5.0+ device |
+            | 🪟 Windows | `LE-MOVIE-Windows.zip` | Extract & run `le_movie.exe` |
+            | 🍎 macOS | `LE-MOVIE-macOS.zip` | Extract & run `le_movie.app` |
+            | 🌐 Web | [le-movie.pages.dev](https://le-movie.pages.dev) | Live website |
+
+            ### Features
             - 🎬 10+ streaming servers with auto-fallback
             - 🔍 Smart search across movies & TV shows
             - 🌍 Multi-language support (EN, HI, ES, FR)
-            - 📺 Full TV series support with season/episode selection
-            - 🎨 Premium dark UI with glassmorphism
+            - 📺 Full TV series with season/episode navigation
+            - 🎠 Auto-sliding hero carousel
+            - 🎨 Premium dark UI with edge-to-edge layout
           draft: false
           prerelease: false
           files: |
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            artifacts/LE-MOVIE-Android.apk
+            artifacts/LE-MOVIE-Windows.zip
+            artifacts/LE-MOVIE-macOS.zip
