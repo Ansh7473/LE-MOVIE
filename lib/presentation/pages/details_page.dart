@@ -201,124 +201,50 @@ class _DetailsPageState extends State<DetailsPage> {
                     else if (streamProv.availableStreams.isNotEmpty) ...[
                       _sectionLabel('SELECT SERVER'),
                       const SizedBox(height: 12),
-                      ...streamProv.availableStreams.asMap().entries.map((entry) {
-                        final i = entry.key;
-                        final s = entry.value;
-                        final isSelected = streamProv.selectedStream == s;
-                        return GestureDetector(
-                          onTap: () {
-                            streamProv.selectStream(s);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PlayerPage(stream: s),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: streamProv.availableStreams.asMap().entries.map((entry) {
+                          final i = entry.key;
+                          final s = entry.value;
+                          final isSelected = streamProv.selectedStream == s;
+                          return GestureDetector(
+                            onTap: () {
+                              streamProv.selectStream(s);
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerPage(stream: s)));
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFFE50914) : Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(color: isSelected ? const Color(0xFFE50914) : Colors.white24),
+                                boxShadow: isSelected ? [BoxShadow(color: const Color(0xFFE50914).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))] : [],
                               ),
-                            );
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFFE50914).withOpacity(0.15)
-                                  : Colors.white.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFFE50914).withOpacity(0.8)
-                                    : Colors.white10,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFFE50914).withOpacity(0.3),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 5),
-                                      )
-                                    ]
-                                  : [],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 46,
-                                  height: 46,
-                                  decoration: BoxDecoration(
-                                    color: isSelected 
-                                      ? const Color(0xFFE50914).withOpacity(0.2)
-                                      : Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected ? const Color(0xFFE50914).withOpacity(0.4) : Colors.transparent,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isSelected ? Icons.play_circle_fill : Icons.cloud_queue_rounded,
+                                    size: 18,
+                                    color: isSelected ? Colors.white : Colors.white70,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    s.language,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                      color: isSelected ? Colors.white : Colors.white70,
                                     ),
                                   ),
-                                  child: Icon(
-                                    Icons.bolt_rounded,
-                                    color: isSelected ? const Color(0xFFE50914) : Colors.white60,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        s.language,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w800,
-                                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.hd_rounded, size: 14, color: Colors.blue.shade300),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'Ultra HD 4K • Direct Stream',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.white.withOpacity(0.4),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFFE50914) : Colors.white.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.play_arrow_rounded,
-                                          size: 16, color: isSelected ? Colors.white : Colors.white70),
-                                      const SizedBox(width: 4),
-                                      Text('PLAY',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w900,
-                                            color: isSelected ? Colors.white : Colors.white70,
-                                            letterSpacing: 0.5,
-                                          )),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }),
+                          );
+                        }).toList(),
+                      ),
                     ] else if (!streamProv.isLoading)
                       _buildNoStreams(),
                   ],
