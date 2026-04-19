@@ -56,11 +56,11 @@ class MovieService {
       });
 
   // ─── 1. Smart Search ───────────────────────────────────────────────────────
-  Future<List<MovieModel>> searchItems(String query) async {
+  Future<List<MovieModel>> searchItems(String query, {String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/search/multi',
-        queryParameters: {'api_key': _apiKey, 'query': query},
+        queryParameters: {'api_key': _apiKey, 'query': query, 'language': language},
         options: _contentOptions,
       );
       final List results = response.data['results'] ?? [];
@@ -72,11 +72,11 @@ class MovieService {
   }
 
   // ─── 2. TV Show Details ────────────────────────────────────────────────────
-  Future<TVDetailsModel?> getTVDetails(int id) async {
+  Future<TVDetailsModel?> getTVDetails(int id, {String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/tv/$id',
-        queryParameters: {'api_key': _apiKey},
+        queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
       return TVDetailsModel.fromJson(response.data);
@@ -87,11 +87,11 @@ class MovieService {
   }
 
   // ─── 3. Episodes per Season ────────────────────────────────────────────────
-  Future<List<EpisodeModel>> getSeasonEpisodes(int tvId, int seasonNum) async {
+  Future<List<EpisodeModel>> getSeasonEpisodes(int tvId, int seasonNum, {String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/tv/$tvId/season/$seasonNum',
-        queryParameters: {'api_key': _apiKey},
+        queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
       final List episodes = response.data['episodes'] ?? [];
@@ -178,11 +178,11 @@ class MovieService {
   }
 
   // ─── 5. Trending Movies ────────────────────────────────────────────────────
-  Future<List<MovieModel>> getTrendingMovies() async {
+  Future<List<MovieModel>> getTrendingMovies({String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/trending/movie/week',
-        queryParameters: {'api_key': _apiKey, 'language': 'en'},
+        queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
       final List results = response.data['results'] ?? [];
@@ -194,11 +194,11 @@ class MovieService {
   }
 
   // ─── 6. Trending TV Shows ──────────────────────────────────────────────────
-  Future<List<MovieModel>> getTrendingTV() async {
+  Future<List<MovieModel>> getTrendingTV({String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/trending/tv/week',
-        queryParameters: {'api_key': _apiKey, 'language': 'en'},
+        queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
       final List results = response.data['results'] ?? [];
@@ -210,17 +210,87 @@ class MovieService {
   }
 
   // ─── 7. Movie Details ──────────────────────────────────────────────────────
-  Future<MovieModel?> getMovieDetails(int id) async {
+  Future<MovieModel?> getMovieDetails(int id, {String language = 'en-US'}) async {
     try {
       final response = await _dio.get(
         '$_contentBaseUrl/movie/$id',
-        queryParameters: {'api_key': _apiKey},
+        queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
       return MovieModel.fromJson(response.data);
     } catch (e) {
       print('Movie Details Error: $e');
       return null;
+    }
+  }
+
+  // ─── 8. Popular Movies and Series ──────────────────────────────────────────
+  Future<List<MovieModel>> getPopularMovies({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/movie/popular',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Popular Movies Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<MovieModel>> getPopularTV({String language = 'en-US', int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '$_contentBaseUrl/tv/popular',
+        queryParameters: {'api_key': _apiKey, 'language': language, 'page': page},
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Popular TV Error: $e');
+      return [];
+    }
+  }
+
+  // ─── 9. Genres ─────────────────────────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> getGenres(bool isTv, {String language = 'en-US'}) async {
+    try {
+      final type = isTv ? 'tv' : 'movie';
+      final response = await _dio.get(
+        '$_contentBaseUrl/genre/$type/list',
+        queryParameters: {'api_key': _apiKey, 'language': language},
+        options: _contentOptions,
+      );
+      final List genres = response.data['genres'] ?? [];
+      return genres.map((g) => g as Map<String, dynamic>).toList();
+    } catch (e) {
+      print('Genres List Error: $e');
+      return [];
+    }
+  }
+
+  Future<List<MovieModel>> getDiscoverByGenre(bool isTv, int genreId, {String language = 'en-US', int page = 1}) async {
+    try {
+      final type = isTv ? 'tv' : 'movie';
+      final response = await _dio.get(
+        '$_contentBaseUrl/discover/$type',
+        queryParameters: {
+          'api_key': _apiKey, 
+          'language': language, 
+          'page': page,
+          'with_genres': genreId,
+          'sort_by': 'popularity.desc'
+        },
+        options: _contentOptions,
+      );
+      final List results = response.data['results'] ?? [];
+      return results.map((m) => MovieModel.fromJson(m)).toList();
+    } catch (e) {
+      print('Discover Genre Error: $e');
+      return [];
     }
   }
 }

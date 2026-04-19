@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'presentation/providers/search_provider.dart';
 import 'presentation/providers/streaming_provider.dart';
 import 'presentation/providers/home_provider.dart';
+import 'presentation/providers/language_provider.dart';
 import 'presentation/pages/home_page.dart';
 
 void main() {
@@ -14,7 +15,8 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => StreamingProvider()),
-        ChangeNotifierProvider(create: (_) => HomeProvider()..init()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()..init('en-US')),
       ],
       child: const LeMovieApp(),
     ),
