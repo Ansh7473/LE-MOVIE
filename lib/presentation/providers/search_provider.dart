@@ -36,6 +36,13 @@ class SearchProvider extends ChangeNotifier {
     });
   }
 
+  void clearSearch() {
+    _debounce?.cancel();
+    _suggestions = [];
+    _isLoading = false;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
