@@ -255,7 +255,7 @@ class MovieService {
     }
   }
 
-  // ─── 9. Genres ─────────────────────────────────────────────────────────────
+  // ─── 10. Additional Movie & TV Lists ─────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getGenres(bool isTv, {String language = 'en-US'}) async {
     try {
       final type = isTv ? 'tv' : 'movie';
