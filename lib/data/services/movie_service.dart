@@ -102,35 +102,75 @@ class MovieService {
     }
   }
 
-  // ─── 4. Streaming Links (vidsrc.wtf embeds) ────────────────────────────────
-  // Returns a list with multiple server options using the vidsrc.wtf embed API
+  // ─── 4. Streaming Links (All embed APIs) ──────────────────────────────────
+  // Returns a list with multiple server options using various TMDB embed APIs
   Future<List<StreamModel>> getStreams(int id, int season, int episode) async {
     try {
       final bool isMovie = season == 0 && episode == 0;
+      final List<StreamModel> streams = [];
 
-      // Build embed URLs for each server (server 1 and server 2)
-      final String server1 = isMovie
-          ? 'https://www.vidsrc.wtf/api/1/movie/?id=$id&color=215fb3'
-          : 'https://www.vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode&color=215fb3';
-
-      final String server2 = isMovie
-          ? 'https://www.vidsrc.wtf/api/2/movie/?id=$id&color=215fb3'
-          : 'https://www.vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3';
-
-      return [
-        StreamModel(
-          language: 'Server 1',
-          url: server1,
+      void addServer(String name, String movieUrl, String tvUrl) {
+        streams.add(StreamModel(
+          language: name,
+          url: isMovie ? movieUrl : tvUrl,
           headers: {'Referer': 'https://ww2-fmovies.com/'},
           isIframe: true,
-        ),
-        StreamModel(
-          language: 'Server 2',
-          url: server2,
-          headers: {'Referer': 'https://ww2-fmovies.com/'},
-          isIframe: true,
-        ),
-      ];
+        ));
+      }
+
+      // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
+      addServer(
+        'UltraBox',
+        'https://player.vidplus.to/embed/movie/$id',
+        'https://player.vidplus.to/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'HyperLink (vidsrc 1)',
+        'https://vidsrc.wtf/api/1/movie/?id=$id&color=215fb3',
+        'https://vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode&color=215fb3',
+      );
+      addServer(
+        'CloudBox',
+        'https://vidify.top/embed/movie/$id',
+        'https://vidify.top/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'UpCloud (vidsrc.co)',
+        'https://player.vidsrc.co/embed/movie/$id',
+        'https://player.vidsrc.co/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'NexaStream (vidsrc 2)',
+        'https://vidsrc.wtf/api/2/movie/?id=$id&color=215fb3',
+        'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
+      );
+      addServer(
+        'StreamVault',
+        'https://hexa.watch/watch/movie/$id',
+        'https://hexa.watch/watch/tv/$id/$season/$episode',
+      );
+      addServer(
+        'MediaHub',
+        'https://spencerdevs.xyz/movie/$id?theme=215fb3',
+        'https://spencerdevs.xyz/tv/$id/$season/$episode?theme=215fb3',
+      );
+      addServer(
+        'CloudPlay (vidsrc.cc)',
+        'https://vidsrc.cc/v2/embed/movie/$id',
+        'https://vidsrc.cc/v2/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'StreamBoxHD',
+        'https://test.autoembed.cc/embed/movie/$id',
+        'https://test.autoembed.cc/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'MovieVault',
+        'https://rivestream.org/embed?type=movie&id=$id',
+        'https://rivestream.org/embed?type=tv&id=$id&s=$season&e=$episode',
+      );
+
+      return streams;
     } catch (e) {
       print('Stream Error: $e');
       return [];
