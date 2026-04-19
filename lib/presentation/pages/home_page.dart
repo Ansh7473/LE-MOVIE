@@ -9,6 +9,8 @@ import '../widgets/glass_container.dart';
 import 'details_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:shimmer/shimmer.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -44,9 +46,15 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 40),
 
                     if (homeProv.isLoading)
-                      const SizedBox(
-                        height: 400,
-                        child: Center(child: CircularProgressIndicator(color: Color(0xFFE50914))),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildShimmerHero(),
+                          const SizedBox(height: 40),
+                          _buildShimmerList(),
+                          const SizedBox(height: 40),
+                          _buildShimmerList(),
+                        ],
                       )
                     else ...[
                       // Hero Featured Section
@@ -62,8 +70,7 @@ class HomePage extends StatelessWidget {
                       _buildSectionTitle('Top Rated TV Shows'),
                       const SizedBox(height: 15),
                       _buildHorizontalList(context, homeProv.trendingTV, isTv: true),
-                      
-                      const SizedBox(height: 50), // Bottom padding
+                      const SizedBox(height: 50),
                     ],
                   ],
                 ),
@@ -75,6 +82,56 @@ class HomePage extends StatelessWidget {
           const SearchOverlay(),
         ],
       ),
+    );
+  }
+
+  Widget _buildShimmerHero() {
+    return Shimmer.fromColors(
+      baseColor: Colors.white10,
+      highlightColor: Colors.white24,
+      child: Container(
+        height: 250,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.white10,
+          highlightColor: Colors.white24,
+          child: Container(width: 150, height: 20, color: Colors.white),
+        ),
+        const SizedBox(height: 15),
+        SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 5,
+            itemBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.only(right: 15),
+              child: Shimmer.fromColors(
+                baseColor: Colors.white10,
+                highlightColor: Colors.white24,
+                child: Container(
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -6,6 +6,8 @@ import '../providers/streaming_provider.dart';
 import '../widgets/glass_container.dart';
 import 'player_page.dart';
 
+import 'package:shimmer/shimmer.dart';
+
 class DetailsPage extends StatefulWidget {
   final int showId;
   final bool isTv;
@@ -43,15 +45,23 @@ class _DetailsPageState extends State<DetailsPage> {
                 backgroundColor: Colors.transparent,
                 expandedHeight: 200,
                 pinned: true,
-                title: Text(streamProv.currentTVDetails?.name ?? 'Media Details'),
+                title: Text(streamProv.currentTVDetails?.name ?? (widget.isTv ? 'TV Show' : 'Movie')),
               ),
 
               if (streamProv.isLoading)
-                const SliverToBoxAdapter(
-                  child: Center(child: Padding(
-                    padding: EdgeInsets.all(50.0),
-                    child: CircularProgressIndicator(color: Color(0xFFE50914)),
-                  )),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        _buildShimmerBlock(height: 100, width: double.infinity),
+                        const SizedBox(height: 20),
+                        _buildShimmerBlock(height: 50, width: double.infinity),
+                        const SizedBox(height: 20),
+                        _buildShimmerBlock(height: 200, width: double.infinity),
+                      ],
+                    ),
+                  ),
                 )
               else ...[
                 // Season Selection Section (Only for TV)
@@ -159,6 +169,21 @@ class _DetailsPageState extends State<DetailsPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerBlock({required double height, required double width}) {
+    return Shimmer.fromColors(
+      baseColor: Colors.white10,
+      highlightColor: Colors.white24,
+      child: Container(
+        height: height,
+        width: width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
