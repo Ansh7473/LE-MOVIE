@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'dart:ui_web' as ui;
-import 'dart:html' as html;
 import '../../data/models/stream_model.dart';
 import 'package:flutter/foundation.dart';
+
+// Conditional import: loads web iframe helper on web, no-op stub on mobile
+import 'player_page_stub.dart'
+    if (dart.library.html) 'player_page_web.dart';
 
 class PlayerPage extends StatefulWidget {
   final StreamModel stream;
@@ -61,16 +63,10 @@ class _PlayerPageState extends State<PlayerPage> {
   // --- Hybrid Logic B: Hardened WebView Player ---
   void _initializeIframePlayer() {
     if (kIsWeb) {
-      // WEB: Register sandboxed iframe
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(
+      // WEB: Register sandboxed iframe via conditional import
+      registerIframeFactory(
         'iframe-player-${widget.stream.url}',
-        (int viewId) => html.IFrameElement()
-          ..src = widget.stream.url
-          ..style.border = 'none'
-          ..allowFullscreen = true
-          ..setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation'), 
-          // CRITICAL: We omit 'allow-popups' to block tab-redirects
+        widget.stream.url,
       );
     } else {
       // MOBILE: Initialize webview_flutter with redirect block
