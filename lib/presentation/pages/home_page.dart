@@ -173,7 +173,7 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     color: _isSearchExpanded ? Colors.white12 : Colors.transparent,
                     border: Border.all(
-                        color: _isSearchExpanded ? Colors.white at 24 : Colors.transparent),
+                        color: _isSearchExpanded ? Colors.white24 : Colors.transparent),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
