@@ -27,6 +27,9 @@ class _DetailsPageState extends State<DetailsPage> {
   @override
   Widget build(BuildContext context) {
     final streamProv = context.watch<StreamingProvider>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth > 1200 ? 60.0 : screenWidth > 800 ? 40.0 : 16.0;
+    
     final title = streamProv.currentTVDetails?.name ?? (widget.isTv ? 'TV Show' : 'Movie');
 
     return Scaffold(
@@ -83,13 +86,11 @@ class _DetailsPageState extends State<DetailsPage> {
           else
             SliverToBoxAdapter(
               child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1200),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
 
                     // ── Season Selector (TV only) ─────────────────────────
                     if (widget.isTv && streamProv.currentTVDetails != null) ...[
@@ -309,8 +310,6 @@ class _DetailsPageState extends State<DetailsPage> {
                 ),
               ),
             ),
-          ),
-        ),
         ],
       ),
     );

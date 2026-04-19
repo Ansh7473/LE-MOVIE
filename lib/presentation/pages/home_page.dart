@@ -59,15 +59,13 @@ class _HomePageState extends State<HomePage> {
     final langProv = context.watch<LanguageProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     
-    // Dynamic Responsive Scaling Algorithm
-    // If ultra wide, add massive padding. If mobile, minimal padding.
-    final horizontalPadding = screenWidth > 1600 
-        ? screenWidth * 0.15 
-        : screenWidth > 1200 
-            ? screenWidth * 0.08 
-            : screenWidth > 800 
-                ? 40.0 
-                : 20.0;
+    // Edge-to-Edge Responsive Scaling!
+    // Simply use 5% padding or static 60px on massive screens so content always expands.
+    final horizontalPadding = screenWidth > 1200 
+        ? 60.0 
+        : screenWidth > 800 
+            ? 40.0 
+            : 20.0;
                 
     final isDesktop = screenWidth > 800;
 
