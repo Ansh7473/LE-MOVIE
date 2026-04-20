@@ -5,11 +5,19 @@ import 'movie_model.dart';
 class TVDetailsModel {
   final int id;
   final String name;
+  final String backdropPath;
+  final String overview;
+  final double voteAverage;
+  final String firstAirDate;
   final List<SeasonModel> seasons;
 
   TVDetailsModel({
     required this.id,
     required this.name,
+    required this.backdropPath,
+    required this.overview,
+    required this.voteAverage,
+    required this.firstAirDate,
     required this.seasons,
   });
 
@@ -17,6 +25,10 @@ class TVDetailsModel {
     return TVDetailsModel(
       id: json['id'],
       name: json['name'],
+      backdropPath: json['backdrop_path'] ?? '',
+      overview: json['overview'] ?? '',
+      voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
+      firstAirDate: json['first_air_date'] ?? '',
       seasons: (json['seasons'] as List)
           .map((s) => SeasonModel.fromJson(s))
           .toList(),

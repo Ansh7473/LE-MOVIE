@@ -12,6 +12,9 @@ class StreamingProvider extends ChangeNotifier {
   TVDetailsModel? _currentTVDetails;
   TVDetailsModel? get currentTVDetails => _currentTVDetails;
 
+  MovieModel? _currentMovieDetails;
+  MovieModel? get currentMovieDetails => _currentMovieDetails;
+
   List<EpisodeModel> _currentEpisodes = [];
   List<EpisodeModel> get currentEpisodes => _currentEpisodes;
 
@@ -34,6 +37,7 @@ class StreamingProvider extends ChangeNotifier {
   Future<void> loadMedia(int id, {bool isTv = true}) async {
     _isLoading = true;
     _currentTVDetails = null;
+    _currentMovieDetails = null;
     _currentEpisodes = [];
     _availableStreams = [];
     _selectedSeason = null;
@@ -47,6 +51,7 @@ class StreamingProvider extends ChangeNotifier {
       }
     } else {
       // It's a Movie
+      _currentMovieDetails = await _movieService.getMovieDetails(id);
       _availableStreams = await _movieService.getStreams(id, 0, 0); // Special case for movies
       if (_availableStreams.isNotEmpty) {
         _selectedStream = _availableStreams.first;

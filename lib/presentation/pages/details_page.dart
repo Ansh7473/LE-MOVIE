@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 import '../providers/streaming_provider.dart';
 import 'player_page.dart';
 import 'package:shimmer/shimmer.dart';
@@ -20,113 +22,221 @@ class _DetailsPageState extends State<DetailsPage> {
   void initState() {
     super.initState();
     Future.microtask(() =>
-      context.read<StreamingProvider>().loadMedia(widget.showId, isTv: widget.isTv)
-    );
+        context.read<StreamingProvider>().loadMedia(widget.showId, isTv: widget.isTv));
   }
 
   @override
   Widget build(BuildContext context) {
     final streamProv = context.watch<StreamingProvider>();
-    final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth > 1200 ? 60.0 : screenWidth > 800 ? 40.0 : 16.0;
+    final size = MediaQuery.of(context).size;
     
-    final title = streamProv.currentTVDetails?.name ?? (widget.isTv ? 'TV Show' : 'Movie');
+    // Determine dynamic values based on media type
+    final movieDetails = streamProv.currentMovieDetails;
+    final tvDetails = streamProv.currentTVDetails;
+    
+    final title = widget.isTv 
+        ? (tvDetails?.name ?? 'Loading...') 
+        : (movieDetails?.title ?? 'Loading...');
+    
+    final backdropPath = widget.isTv 
+        ? (tvDetails?.backdropPath ?? '') 
+        : (movieDetails?.backdropPath ?? '');
+        
+    final posterPath = widget.isTv 
+        ? '' // TV typically shows season posters later, but we can use first season or empty for now
+        : (movieDetails?.posterPath ?? '');
+        
+    final overview = widget.isTv 
+        ? (tvDetails?.overview ?? '') 
+        : (movieDetails?.overview ?? '');
+        
+    final rating = widget.isTv 
+        ? (tvDetails?.voteAverage ?? 0.0) 
+        : (movieDetails?.voteAverage ?? 0.0);
+        
+    final releaseDate = widget.isTv 
+        ? (tvDetails?.firstAirDate ?? '') 
+        : (movieDetails?.releaseDate ?? '');
+
+    final primaryColor = widget.isTv ? Colors.blue : const Color(0xFFE50914);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF0A0A0B),
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────────
+          // ── Hero Backdrop & Info ─────────────────────────────────────────
           SliverAppBar(
-            backgroundColor: const Color(0xFF0F0F0F).withOpacity(0.9),
-            expandedHeight: 60,
+            expandedHeight: size.height * 0.55,
             pinned: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 0.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: widget.isTv
-                      ? Colors.blue.withOpacity(0.2)
-                      : const Color(0xFFE50914).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: widget.isTv
-                        ? Colors.blue.withOpacity(0.5)
-                        : const Color(0xFFE50914).withOpacity(0.5),
-                  ),
-                ),
-                child: Text(
-                  widget.isTv ? 'TV SERIES' : 'MOVIE',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: widget.isTv ? Colors.lightBlueAccent : const Color(0xFFE50914),
-                  ),
+            stretch: true,
+            backgroundColor: const Color(0xFF0A0A0B),
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.black38,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-            ],
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Backdrop Image
+                  if (backdropPath.isNotEmpty)
+                    CachedNetworkImage(
+                      imageUrl: 'https://image.tmdb.org/t/p/original$backdropPath',
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(color: Colors.black12),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    )
+                  else
+                    Container(color: const Color(0xFF1A1A1D)),
+
+                  // Cinematic Gradient Overlays
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.transparent,
+                          Color(0xFF0A0A0B),
+                        ],
+                        stops: [0.0, 0.4, 1.0],
+                      ),
+                    ),
+                  ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Color(0xFF0A0A0B),
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.3],
+                      ),
+                    ),
+                  ),
+
+                  // Metadata Overlay
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                widget.isTv ? 'TV SERIES' : 'MOVIE',
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            if (releaseDate.isNotEmpty)
+                              Text(
+                                releaseDate.split('-')[0],
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                const SizedBox(width: 4),
+                                Text(
+                                  rating.toStringAsFixed(1),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          title.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          overview,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
 
-          // ── Content ──────────────────────────────────────────────────────
-          if (streamProv.isLoading && streamProv.availableStreams.isEmpty)
-            SliverToBoxAdapter(child: _buildShimmer())
-          else
-            SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-
-                    // ── Season Selector (TV only) ─────────────────────────
-                    if (widget.isTv && streamProv.currentTVDetails != null) ...[
-                      _sectionLabel('SEASON'),
-                      const SizedBox(height: 10),
+          // ── Controls Section ─────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Loading Indicator
+                  if (streamProv.isLoading && streamProv.availableStreams.isEmpty)
+                    _buildShimmer()
+                  else ...[
+                    // TV Specific: Seasons & Episodes
+                    if (widget.isTv && tvDetails != null) ...[
+                      _sectionLabel('CHOOSE SEASON'),
+                      const SizedBox(height: 12),
                       SizedBox(
-                        height: 40,
+                        height: 45,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: streamProv.currentTVDetails!.seasons.length,
+                          itemCount: tvDetails.seasons.length,
                           itemBuilder: (context, i) {
-                            final season = streamProv.currentTVDetails!.seasons[i];
+                            final season = tvDetails.seasons[i];
                             final isSelected = streamProv.selectedSeason == season;
                             return GestureDetector(
                               onTap: () => streamProv.selectSeason(season),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                margin: const EdgeInsets.only(right: 10),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                duration: const Duration(milliseconds: 250),
+                                margin: const EdgeInsets.only(right: 12),
+                                padding: const EdgeInsets.symmetric(horizontal: 22),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? const Color(0xFFE50914)
-                                      : const Color(0xFF1E1E2E),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: isSelected ? primaryColor : Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFFE50914)
-                                        : Colors.white12,
+                                    color: isSelected ? primaryColor : Colors.white10,
                                   ),
                                 ),
+                                alignment: Alignment.center,
                                 child: Text(
                                   season.name,
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected ? Colors.white : Colors.white54,
+                                    color: isSelected ? Colors.white : Colors.white60,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
                               ),
@@ -135,18 +245,14 @@ class _DetailsPageState extends State<DetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                    ],
-
-                    // ── Episode Grid (TV only) ────────────────────────────
-                    if (widget.isTv && streamProv.currentEpisodes.isNotEmpty) ...[
                       _sectionLabel('EPISODES'),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 80,
-                          childAspectRatio: 1.5,
+                          maxCrossAxisExtent: 70,
+                          childAspectRatio: 1,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                         ),
@@ -159,30 +265,14 @@ class _DetailsPageState extends State<DetailsPage> {
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFFE50914)
-                                    : const Color(0xFF1E1E2E),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFFE50914)
-                                      : Colors.white10,
-                                ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFFE50914).withOpacity(0.4),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        )
-                                      ]
-                                    : [],
+                                color: isSelected ? primaryColor : Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: isSelected ? primaryColor : Colors.white10),
                               ),
                               child: Center(
                                 child: Text(
                                   'E${ep.episodeNumber}',
                                   style: TextStyle(
-                                    fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected ? Colors.white : Colors.white38,
                                   ),
@@ -195,60 +285,108 @@ class _DetailsPageState extends State<DetailsPage> {
                       const SizedBox(height: 24),
                     ],
 
-                    // ── Server Selection ──────────────────────────────────
-                    if (streamProv.isLoading && streamProv.selectedEpisode != null)
+                    // Server Selection
+                    if (streamProv.isLoading && streamProv.selectedStream == null)
                       _buildServerShimmer()
                     else if (streamProv.availableStreams.isNotEmpty) ...[
                       _sectionLabel('SELECT SERVER'),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: streamProv.availableStreams.asMap().entries.map((entry) {
-                          final i = entry.key;
-                          final s = entry.value;
-                          final isSelected = streamProv.selectedStream == s;
-                          return GestureDetector(
-                            onTap: () {
-                              streamProv.selectStream(s);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerPage(stream: s)));
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFE50914) : Colors.white.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: isSelected ? const Color(0xFFE50914) : Colors.white24),
-                                boxShadow: isSelected ? [BoxShadow(color: const Color(0xFFE50914).withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))] : [],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isSelected ? Icons.play_circle_fill : Icons.cloud_queue_rounded,
-                                    size: 18,
-                                    color: isSelected ? Colors.white : Colors.white70,
+                      const SizedBox(height: 14),
+                      GlassmorphicContainer(
+                        width: double.infinity,
+                        height: streamProv.availableStreams.length * 75.0 + 20,
+                        borderRadius: 24,
+                        blur: 15,
+                        alignment: Alignment.center,
+                        border: 2,
+                        linearGradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.05),
+                            Colors.white.withOpacity(0.02),
+                          ],
+                        ),
+                        borderGradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.1),
+                            Colors.white.withOpacity(0.02),
+                          ],
+                        ),
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(12),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: streamProv.availableStreams.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, i) {
+                            final s = streamProv.availableStreams[i];
+                            final isSelected = streamProv.selectedStream == s;
+                            return GestureDetector(
+                              onTap: () {
+                                streamProv.selectStream(s);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerPage(stream: s)));
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? primaryColor.withOpacity(0.15) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected ? primaryColor.withOpacity(0.5) : Colors.transparent,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    s.language,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                      color: isSelected ? Colors.white : Colors.white70,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? primaryColor : Colors.white.withOpacity(0.05),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        isSelected ? Icons.play_arrow_rounded : Icons.dns_rounded,
+                                        size: 20,
+                                        color: isSelected ? Colors.white : Colors.white60,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            s.language,
+                                            style: TextStyle(
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Premium High Speed Server',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.white38,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(Icons.check_circle_rounded, color: primaryColor, size: 22),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          },
+                        ),
                       ),
                     ] else if (!streamProv.isLoading)
                       _buildNoStreams(),
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -257,31 +395,44 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  Widget _sectionLabel(String label) => Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.white38,
-          letterSpacing: 1.5,
-        ),
+  Widget _sectionLabel(String label) => Row(
+        children: [
+          Container(
+            width: 3,
+            height: 16,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: Colors.white70,
+              letterSpacing: 2.0,
+            ),
+          ),
+        ],
       );
 
   Widget _buildNoStreams() => Center(
         child: Padding(
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.symmetric(vertical: 60),
           child: Column(
             children: [
-              const Icon(Icons.cloud_off, size: 48, color: Colors.white24),
-              const SizedBox(height: 12),
+              Icon(Icons.error_outline_rounded, size: 50, color: Colors.white24),
+              const SizedBox(height: 16),
               const Text(
-                'No servers found',
-                style: TextStyle(fontSize: 16, color: Colors.white54),
+                'NO STREAMING SERVERS FOUND',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white38),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
-                'Try selecting a different episode',
-                style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.3)),
+                'Try selecting a different provider or episode',
+                style: TextStyle(fontSize: 12, color: Colors.white30),
               ),
             ],
           ),
@@ -289,18 +440,42 @@ class _DetailsPageState extends State<DetailsPage> {
       );
 
   Widget _buildServerShimmer() => Column(
+        children: List.generate(
+          3,
+          (index) => Container(
+            height: 70,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Shimmer.fromColors(
+              baseColor: Colors.white.withOpacity(0.05),
+              highlightColor: Colors.white.withOpacity(0.1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildShimmer() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel('SELECT SERVER'),
+          Shimmer.fromColors(
+            baseColor: Colors.white.withOpacity(0.05),
+            highlightColor: Colors.white.withOpacity(0.1),
+            child: Container(height: 20, width: 100, color: Colors.white),
+          ),
           const SizedBox(height: 12),
-          ...List.generate(
-            2,
-            (_) => Shimmer.fromColors(
-              baseColor: Colors.white10,
-              highlightColor: Colors.white24,
-              child: Container(
-                height: 78,
-                margin: const EdgeInsets.only(bottom: 10),
+          SizedBox(
+            height: 45,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              itemBuilder: (_, __) => Container(
+                width: 100,
+                margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -309,60 +484,5 @@ class _DetailsPageState extends State<DetailsPage> {
             ),
           ),
         ],
-      );
-
-  Widget _buildShimmer() => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Shimmer.fromColors(
-              baseColor: Colors.white10,
-              highlightColor: Colors.white24,
-              child: Container(
-                  height: 20, width: 80, color: Colors.white,
-                  margin: const EdgeInsets.only(bottom: 10)),
-            ),
-            Shimmer.fromColors(
-              baseColor: Colors.white10,
-              highlightColor: Colors.white24,
-              child: SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 4,
-                  itemBuilder: (_, __) => Container(
-                    width: 90,
-                    margin: const EdgeInsets.only(right: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Shimmer.fromColors(
-              baseColor: Colors.white10,
-              highlightColor: Colors.white24,
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5, childAspectRatio: 1.6,
-                  crossAxisSpacing: 8, mainAxisSpacing: 8,
-                ),
-                itemCount: 15,
-                itemBuilder: (_, __) => Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       );
 }
