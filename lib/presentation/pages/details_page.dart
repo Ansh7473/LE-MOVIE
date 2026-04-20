@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:glassmorphism/glassmorphism.dart';
+import 'dart:ui' show ImageFilter;
 import '../providers/streaming_provider.dart';
 import 'player_page.dart';
 import 'package:shimmer/shimmer.dart';
@@ -291,30 +291,21 @@ class _DetailsPageState extends State<DetailsPage> {
                     else if (streamProv.availableStreams.isNotEmpty) ...[
                       _sectionLabel('SELECT SERVER'),
                       const SizedBox(height: 14),
-                      GlassmorphicContainer(
-                        width: double.infinity,
-                        height: streamProv.availableStreams.length * 75.0 + 20,
-                        borderRadius: 24,
-                        blur: 15,
-                        alignment: Alignment.center,
-                        border: 2,
-                        linearGradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.05),
-                            Colors.white.withOpacity(0.02),
-                          ],
-                        ),
-                        borderGradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.1),
-                            Colors.white.withOpacity(0.02),
-                          ],
-                        ),
-                        child: ListView.separated(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: ListView.separated(
                           padding: const EdgeInsets.all(12),
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -383,7 +374,9 @@ class _DetailsPageState extends State<DetailsPage> {
                           },
                         ),
                       ),
-                    ] else if (!streamProv.isLoading)
+                    ),
+                  ),
+                ] else if (!streamProv.isLoading)
                       _buildNoStreams(),
                   ],
                 ],
