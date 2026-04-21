@@ -23,12 +23,14 @@ class MovieModel {
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
     return MovieModel(
-      id: json['id'],
+      id: json['id'] ?? 0,
       title: json['title'] ?? json['name'] ?? 'Unknown',
       overview: json['overview'] ?? '',
       posterPath: json['poster_path'] ?? '',
       backdropPath: json['backdrop_path'] ?? '',
-      voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
+      voteAverage: (json['vote_average'] is num) 
+          ? (json['vote_average'] as num).toDouble() 
+          : 0.0,
       releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
       isTv: json['name'] != null || json['first_air_date'] != null,
     );

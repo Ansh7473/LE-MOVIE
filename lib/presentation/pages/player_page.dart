@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_windows/webview_windows.dart' as win;
 import '../../data/models/stream_model.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io' show Process, Platform;
@@ -27,6 +28,10 @@ class _PlayerPageState extends State<PlayerPage> {
 
   // WebView State (Mobile)
   WebViewController? _webViewController;
+
+  // WebView State (Windows)
+  win.WebviewController? _winController;
+  bool _isWinReady = false;
 
   @override
   void initState() {
@@ -62,7 +67,7 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   // --- Hybrid Logic B: Hardened WebView Player ---
-  void _initializeIframePlayer() {
+  void _initializeIframePlayer() async {
     if (kIsWeb) {
       // WEB: Register sandboxed iframe via conditional import
       registerIframeFactory(
@@ -70,8 +75,21 @@ class _PlayerPageState extends State<PlayerPage> {
         widget.stream.url,
       );
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
-      // WINDOWS: webview_flutter NOT supported. Use external browser.
-      _launchInBrowser(widget.stream.url);
+      // WINDOWS: Use webview_windows for native inline playback
+      _winController = win.WebviewController();
+      try {
+        await _winController!.initialize();
+        await _winController!.setBrightness(win.Brightness.dark);
+        await _winController!.setBackgroundColor(Colors.black);
+        await _winController!.loadUrl(widget.stream.url);
+        if (mounted) {
+          setState(() => _isWinReady = true);
+        }
+      } catch (e) {
+        print('Windows WebView Error: $e');
+        // Fallback to browser if native webview fails to initialize
+        _launchInBrowser(widget.stream.url);
+      }
     } else {
       // MOBILE: Initialize webview_flutter with redirect block
       _webViewController = WebViewController()
@@ -79,12 +97,10 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onNavigationRequest: (NavigationRequest request) {
-              // Only allow the original URL or safe resources
               if (request.url.contains(widget.stream.url) || request.url.contains('player')) {
                 return NavigationDecision.navigate;
               }
-              print('BLOCKED REDIRECT: ${request.url}');
-              return NavigationDecision.prevent; // HARD BLOCK Redirects
+              return NavigationDecision.prevent;
             },
           ),
         )
@@ -106,6 +122,7 @@ class _PlayerPageState extends State<PlayerPage> {
   void dispose() {
     _videoPlayerController?.dispose();
     _chewieController?.dispose();
+    _winController?.dispose();
     super.dispose();
   }
 
@@ -140,28 +157,9 @@ class _PlayerPageState extends State<PlayerPage> {
     if (kIsWeb) {
       return HtmlElementView(viewType: 'iframe-player-${widget.stream.url}');
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.open_in_browser, size: 60, color: Colors.white54),
-          const SizedBox(height: 20),
-          const Text(
-            'Opening stream in your browser...',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Desktop inline player coming soon.',
-            style: TextStyle(color: Colors.white54, fontSize: 14),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () => _launchInBrowser(widget.stream.url),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE50914)),
-            child: const Text('Try Opening Again'),
-          ),
-        ],
-      );
+      return _isWinReady 
+          ? win.Webview(_winController!)
+          : const CircularProgressIndicator(color: Color(0xFFE50914));
     } else {
       return _webViewController != null 
           ? WebViewWidget(controller: _webViewController!)

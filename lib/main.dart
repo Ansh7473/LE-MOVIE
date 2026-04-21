@@ -9,18 +9,26 @@ import 'presentation/providers/home_provider.dart';
 import 'presentation/providers/language_provider.dart';
 import 'presentation/pages/home_page.dart';
 
+import 'dart:async';
+
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProvider(create: (_) => StreamingProvider()),
-        ChangeNotifierProvider(create: (_) => LanguageProvider()),
-        ChangeNotifierProvider(create: (_) => HomeProvider()..init('en-US')),
-      ],
-      child: const LeMovieApp(),
-    ),
-  );
+  runZonedGuarded(() {
+    WidgetsFlutterBinding.ensureInitialized();
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SearchProvider()),
+          ChangeNotifierProvider(create: (_) => StreamingProvider()),
+          ChangeNotifierProvider(create: (_) => LanguageProvider()),
+          ChangeNotifierProvider(create: (_) => HomeProvider()..init('en-US')),
+        ],
+        child: const LeMovieApp(),
+      ),
+    );
+  }, (error, stack) {
+    debugPrint('GLOBAL ERROR: $error');
+    debugPrint('STACK TRACE: $stack');
+  });
 }
 
 class LeMovieApp extends StatelessWidget {
