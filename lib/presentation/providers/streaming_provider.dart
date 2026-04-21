@@ -52,7 +52,7 @@ class StreamingProvider extends ChangeNotifier {
     } else {
       // It's a Movie
       _currentMovieDetails = await _movieService.getMovieDetails(id);
-      _availableStreams = await _movieService.getStreams(id, 0, 0); // Special case for movies
+      _availableStreams = await _movieService.getStreams(id, 0, 0, imdbId: _currentMovieDetails?.imdbId); // Special case for movies
       if (_availableStreams.isNotEmpty) {
         _selectedStream = _availableStreams.first;
       }
@@ -92,6 +92,7 @@ class StreamingProvider extends ChangeNotifier {
         _currentTVDetails!.id,
         _selectedSeason!.seasonNumber,
         episode.episodeNumber,
+        imdbId: _currentTVDetails?.imdbId,
       );
       
       if (_availableStreams.isNotEmpty) {

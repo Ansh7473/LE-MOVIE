@@ -9,6 +9,7 @@ class MovieModel {
   final double voteAverage;
   final String releaseDate;
   final bool isTv;
+  final String? imdbId;
 
   MovieModel({
     required this.id,
@@ -19,6 +20,7 @@ class MovieModel {
     required this.voteAverage,
     required this.releaseDate,
     this.isTv = false,
+    this.imdbId,
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class MovieModel {
           : 0.0,
       releaseDate: json['release_date'] ?? json['first_air_date'] ?? '',
       isTv: json['name'] != null || json['first_air_date'] != null,
+      imdbId: json['imdb_id'],
     );
   }
 

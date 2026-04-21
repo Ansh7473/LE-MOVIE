@@ -10,6 +10,7 @@ class TVDetailsModel {
   final double voteAverage;
   final String firstAirDate;
   final List<SeasonModel> seasons;
+  final String? imdbId;
 
   TVDetailsModel({
     required this.id,
@@ -19,6 +20,7 @@ class TVDetailsModel {
     required this.voteAverage,
     required this.firstAirDate,
     required this.seasons,
+    this.imdbId,
   });
 
   factory TVDetailsModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class TVDetailsModel {
       seasons: (json['seasons'] as List? ?? [])
           .map((s) => SeasonModel.fromJson(s))
           .toList(),
+      imdbId: json['imdb_id'],
     );
   }
 }

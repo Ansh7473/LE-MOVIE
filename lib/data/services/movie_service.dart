@@ -79,7 +79,19 @@ class MovieService {
         queryParameters: {'api_key': _apiKey, 'language': language},
         options: _contentOptions,
       );
-      return TVDetailsModel.fromJson(response.data);
+      final details = TVDetailsModel.fromJson(response.data);
+      
+      // Fetch IMDB ID for TV show
+      try {
+        final extResponse = await _dio.get(
+          '$_contentBaseUrl/tv/$id/external_ids',
+          queryParameters: {'api_key': _apiKey},
+          options: _contentOptions,
+        );
+        return TVDetailsModel.fromJson({...response.data, 'imdb_id': extResponse.data['imdb_id']});
+      } catch (_) {
+        return details;
+      }
     } catch (e) {
       print('TV Details Error: $e');
       return null;
@@ -103,8 +115,8 @@ class MovieService {
   }
 
   // ─── 4. Streaming Links (All embed APIs) ──────────────────────────────────
-  // Returns a list with multiple server options using various TMDB embed APIs
-  Future<List<StreamModel>> getStreams(int id, int season, int episode) async {
+  // Returns a list with multiple server options using various TMDB/IMDB embed APIs
+  Future<List<StreamModel>> getStreams(int id, int season, int episode, {String? imdbId}) async {
     try {
       final bool isMovie = season == 0 && episode == 0;
       final List<StreamModel> streams = [];
@@ -116,6 +128,15 @@ class MovieService {
           headers: customHeaders ?? {'Referer': 'https://ww2-fmovies.com/'},
           isIframe: true,
         ));
+      }
+
+      // 0. NEW: VidBox (Uses IMDB ID)
+      if (imdbId != null && imdbId.isNotEmpty) {
+        addServer(
+          'VidBox (Premium)',
+          'https://vidbox.dev/api/hdmovies/embed?type=movie&id=$imdbId',
+          'https://vidbox.dev/api/hdmovies/embed?type=tv&id=$imdbId&s=$season&e=$episode',
+        );
       }
 
       // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
