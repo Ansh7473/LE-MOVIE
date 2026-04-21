@@ -158,7 +158,7 @@ class MovieService {
         customHeaders: {'Referer': 'https://rgshows.ru/'},
       );
       addServer(
-        'RGShow 3 (Multi-Lang)',
+        'RGShow 3 (Multi-Lang-Hindi)',
         'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
         'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
         customHeaders: {'Referer': 'https://rgshows.ru/'},
