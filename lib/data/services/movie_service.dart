@@ -120,6 +120,23 @@ class MovieService {
 
       // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
       addServer(
+        'RGShow 2 (Videasy-Hindi)',
+        'https://rgshows.ru/player/movies/api2/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api2/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 3 (Multi-Lang-Hindi)',
+        'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'NexaStream (vidsrc 2-Hindi)',
+        'https://vidsrc.wtf/api/2/movie/?id=$id&color=215fb3',
+        'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
+      );
+      addServer(
         'UltraBox',
         'https://player.vidplus.to/embed/movie/$id',
         'https://player.vidplus.to/embed/tv/$id/$season/$episode',
@@ -152,18 +169,6 @@ class MovieService {
         customHeaders: {'Referer': 'https://rgshows.ru/'},
       );
       addServer(
-        'RGShow 2 (Videasy)',
-        'https://rgshows.ru/player/movies/api2/index.html?id=$id&color=e01621',
-        'https://rgshows.ru/player/series/api2/index.html?id=$id&s=$season&e=$episode&color=e01621',
-        customHeaders: {'Referer': 'https://rgshows.ru/'},
-      );
-      addServer(
-        'RGShow 3 (Multi-Lang-Hindi)',
-        'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
-        'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
-        customHeaders: {'Referer': 'https://rgshows.ru/'},
-      );
-      addServer(
         'RGShow 4 (Premium)',
         'https://rgshows.ru/player/movies/api4/index.html?id=$id',
         'https://rgshows.ru/player/series/api4/index.html?id=$id&s=$season&e=$episode',
@@ -174,11 +179,6 @@ class MovieService {
         'https://rgshows.ru/player/movies/api5/index.html?id=$id',
         'https://rgshows.ru/player/series/api5/index.html?id=$id&s=$season&e=$episode',
         customHeaders: {'Referer': 'https://rgshows.ru/'},
-      );
-      addServer(
-        'NexaStream (vidsrc 2)',
-        'https://vidsrc.wtf/api/2/movie/?id=$id&color=215fb3',
-        'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
       );
       addServer(
         'StreamVault',
