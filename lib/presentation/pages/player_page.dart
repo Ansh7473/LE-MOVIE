@@ -80,14 +80,31 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onNavigationRequest: (NavigationRequest request) {
-              if (request.url.contains(widget.stream.url) || request.url.contains('player')) {
+              final url = request.url.toLowerCase();
+              // ALLOW: Original stream, player patterns, and essential web features
+              if (url.contains(widget.stream.url.toLowerCase()) || 
+                  url.contains('player') || 
+                  url.contains('embed') ||
+                  url.startsWith('blob:') ||
+                  url.startsWith('data:')) {
                 return NavigationDecision.navigate;
               }
+              
+              // BLOCK: Everything else (Ads, Popups, Redirects)
+              debugPrint('BLOCKED AD/REDIRECT: $url');
               return NavigationDecision.prevent;
             },
           ),
         )
-        ..loadRequest(Uri.parse(widget.stream.url));
+        ..loadRequest(Uri.parse(widget.stream.url))
+        ..runJavaScript('''
+          // Block window.open (Popups)
+          window.open = function() { return null; };
+          
+          // Disable alert/confirm (optional ad technique)
+          window.alert = function() { return true; };
+          window.confirm = function() { return true; };
+        ''');
     }
     setState(() {});
   }

@@ -32,6 +32,13 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
       await _controller!.initialize();
       await _controller!.setBackgroundColor(Colors.black);
       await _controller!.loadUrl(widget.stream.url);
+      
+      // Inject Ad/Popup blocker
+      await _controller!.executeScript('''
+        window.open = function() { return null; };
+        window.alert = function() { return true; };
+      ''');
+
       if (mounted) setState(() => _isReady = true);
     } catch (e) {
       debugPrint('Windows WebView Initialization Error: $e');
