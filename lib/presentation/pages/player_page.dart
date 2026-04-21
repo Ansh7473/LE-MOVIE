@@ -77,20 +77,22 @@ class _PlayerPageState extends State<PlayerPage> {
       // MOBILE: Initialize webview_flutter with redirect block
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         ..setNavigationDelegate(
           NavigationDelegate(
             onNavigationRequest: (NavigationRequest request) {
               final url = request.url.toLowerCase();
-              // ALLOW: Original stream, player patterns, and essential web features
+              // ALLOW: Essential player navigations and interactions
               if (url.contains(widget.stream.url.toLowerCase()) || 
                   url.contains('player') || 
                   url.contains('embed') ||
                   url.startsWith('blob:') ||
-                  url.startsWith('data:')) {
+                  url.startsWith('data:') ||
+                  url.startsWith('about:blank') ||
+                  url.startsWith('javascript:')) {
                 return NavigationDecision.navigate;
               }
               
-              // BLOCK: Everything else (Ads, Popups, Redirects)
               debugPrint('BLOCKED AD/REDIRECT: $url');
               return NavigationDecision.prevent;
             },
@@ -98,10 +100,16 @@ class _PlayerPageState extends State<PlayerPage> {
         )
         ..loadRequest(Uri.parse(widget.stream.url))
         ..runJavaScript('''
-          // Block window.open (Popups)
-          window.open = function() { return null; };
+          // Refined window.open blocker (Allows internal calls used by player menus)
+          const originalOpen = window.open;
+          window.open = function(url, name, specs) {
+            if (!url || url === 'about:blank' || url === '') {
+              return originalOpen.apply(window, arguments);
+            }
+            console.log('Blocked Popup to: ' + url);
+            return null;
+          };
           
-          // Disable alert/confirm (optional ad technique)
           window.alert = function() { return true; };
           window.confirm = function() { return true; };
         ''');
