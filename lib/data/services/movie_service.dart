@@ -109,11 +109,11 @@ class MovieService {
       final bool isMovie = season == 0 && episode == 0;
       final List<StreamModel> streams = [];
 
-      void addServer(String name, String movieUrl, String tvUrl) {
+      void addServer(String name, String movieUrl, String tvUrl, {Map<String, String>? customHeaders}) {
         streams.add(StreamModel(
           language: name,
           url: isMovie ? movieUrl : tvUrl,
-          headers: {'Referer': 'https://ww2-fmovies.com/'},
+          headers: customHeaders ?? {'Referer': 'https://ww2-fmovies.com/'},
           isIframe: true,
         ));
       }
@@ -138,6 +138,42 @@ class MovieService {
         'UpCloud (vidsrc.co)',
         'https://player.vidsrc.co/embed/movie/$id',
         'https://player.vidsrc.co/embed/tv/$id/$season/$episode',
+      );
+      addServer(
+        'VidLink Pro',
+        'https://vidlink.pro/movie/$id',
+        'https://vidlink.pro/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://vidlink.pro/'},
+      );
+      addServer(
+        'RGShow 1 (Multi)',
+        'https://rgshows.ru/player/movies/api1/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api1/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 2 (Videasy)',
+        'https://rgshows.ru/player/movies/api2/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api2/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 3 (Multi-Lang)',
+        'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 4 (Premium)',
+        'https://rgshows.ru/player/movies/api4/index.html?id=$id',
+        'https://rgshows.ru/player/series/api4/index.html?id=$id&s=$season&e=$episode',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 5 (Embeds)',
+        'https://rgshows.ru/player/movies/api5/index.html?id=$id',
+        'https://rgshows.ru/player/series/api5/index.html?id=$id&s=$season&e=$episode',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
       );
       addServer(
         'NexaStream (vidsrc 2)',
