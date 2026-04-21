@@ -13,8 +13,6 @@ void registerIframeFactory(String viewId, String url) {
     (int id) => html.IFrameElement()
       ..src = url
       ..style.border = 'none'
-      ..allowFullscreen = true
-      ..setAttribute('sandbox',
-          'allow-scripts allow-same-origin allow-forms allow-presentation'),
+      ..allowFullscreen = true,
   );
 }

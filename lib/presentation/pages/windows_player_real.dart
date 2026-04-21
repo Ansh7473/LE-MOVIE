@@ -32,18 +32,6 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
       await _controller!.initialize();
       await _controller!.setBackgroundColor(Colors.black);
       await _controller!.loadUrl(widget.stream.url);
-      
-      // Inject Refined Ad/Popup blocker
-      await _controller!.executeScript('''
-        const originalOpen = window.open;
-        window.open = function(url, name, specs) {
-          if (!url || url === 'about:blank' || url === '') {
-            return originalOpen.apply(window, arguments);
-          }
-          return null;
-        };
-        window.alert = function() { return true; };
-      ''');
 
       if (mounted) setState(() => _isReady = true);
     } catch (e) {

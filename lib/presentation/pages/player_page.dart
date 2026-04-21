@@ -79,24 +79,7 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         ..setNavigationDelegate(
-          NavigationDelegate(
-            onNavigationRequest: (NavigationRequest request) {
-              final url = request.url.toLowerCase();
-              // ALLOW: Essential player navigations and interactions
-              if (url.contains(widget.stream.url.toLowerCase()) || 
-                  url.contains('player') || 
-                  url.contains('embed') ||
-                  url.startsWith('blob:') ||
-                  url.startsWith('data:') ||
-                  url.startsWith('about:blank') ||
-                  url.startsWith('javascript:')) {
-                return NavigationDecision.navigate;
-              }
-              
-              debugPrint('BLOCKED AD/REDIRECT: $url');
-              return NavigationDecision.prevent;
-            },
-          ),
+          const NavigationDelegate(),
         )
         ..loadRequest(Uri.parse(widget.stream.url))
         ..runJavaScript('''
