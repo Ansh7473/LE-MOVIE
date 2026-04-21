@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_windows/webview_windows.dart' as win;
+import 'windows_player_stub.dart'
+    if (dart.library.io) 'windows_player_real.dart';
 import '../../data/models/stream_model.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io' show Process, Platform;
@@ -28,10 +29,6 @@ class _PlayerPageState extends State<PlayerPage> {
 
   // WebView State (Mobile)
   WebViewController? _webViewController;
-
-  // WebView State (Windows)
-  win.WebviewController? _winController;
-  bool _isWinReady = false;
 
   @override
   void initState() {
@@ -75,21 +72,7 @@ class _PlayerPageState extends State<PlayerPage> {
         widget.stream.url,
       );
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
-      // WINDOWS: Use webview_windows for native inline playback
-      _winController = win.WebviewController();
-      try {
-        await _winController!.initialize();
-        await _winController!.setBrightness(win.Brightness.dark);
-        await _winController!.setBackgroundColor(Colors.black);
-        await _winController!.loadUrl(widget.stream.url);
-        if (mounted) {
-          setState(() => _isWinReady = true);
-        }
-      } catch (e) {
-        print('Windows WebView Error: $e');
-        // Fallback to browser if native webview fails to initialize
-        _launchInBrowser(widget.stream.url);
-      }
+      // WINDOWS: Handled by WindowsPlayer widget via conditional import
     } else {
       // MOBILE: Initialize webview_flutter with redirect block
       _webViewController = WebViewController()
@@ -122,7 +105,6 @@ class _PlayerPageState extends State<PlayerPage> {
   void dispose() {
     _videoPlayerController?.dispose();
     _chewieController?.dispose();
-    _winController?.dispose();
     super.dispose();
   }
 
@@ -157,9 +139,7 @@ class _PlayerPageState extends State<PlayerPage> {
     if (kIsWeb) {
       return HtmlElementView(viewType: 'iframe-player-${widget.stream.url}');
     } else if (defaultTargetPlatform == TargetPlatform.windows) {
-      return _isWinReady 
-          ? win.Webview(_winController!)
-          : const CircularProgressIndicator(color: Color(0xFFE50914));
+      return WindowsPlayer(stream: widget.stream);
     } else {
       return _webViewController != null 
           ? WebViewWidget(controller: _webViewController!)
