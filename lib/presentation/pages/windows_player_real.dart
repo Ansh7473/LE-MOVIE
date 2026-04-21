@@ -32,6 +32,25 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
       await _controller!.initialize();
       await _controller!.setBackgroundColor(Colors.black);
       await _controller!.loadUrl(widget.stream.url);
+      
+      // Smart Redirect Blocking for Windows
+      _controller!.url.listen((url) {
+        if (url == 'about:blank' || url.isEmpty) return;
+        
+        final currentUri = Uri.parse(widget.stream.url);
+        final newUri = Uri.parse(url);
+        
+        // If the host changes to something unrelated, it's likely a redirect
+        if (newUri.host.isNotEmpty && 
+            newUri.host != currentUri.host && 
+            !url.contains('player') && 
+            !url.contains('embed') &&
+            !url.contains('rgshows.ru') &&
+            !url.contains('vidlink.pro')) {
+          debugPrint('WINDOWS REDIRECT BLOCKED: $url');
+          _controller!.loadUrl(widget.stream.url); // Force back to player
+        }
+      });
 
       if (mounted) setState(() => _isReady = true);
     } catch (e) {

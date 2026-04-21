@@ -79,7 +79,37 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         ..setNavigationDelegate(
-          const NavigationDelegate(),
+          NavigationDelegate(
+            onNavigationRequest: (NavigationRequest request) {
+              final currentUri = Uri.parse(widget.stream.url);
+              final requestUri = Uri.parse(request.url);
+
+              // 1. ALWAYS ALLOW: Internal navigations (same host) or relative paths
+              if (requestUri.host == currentUri.host || requestUri.host.isEmpty) {
+                return NavigationDecision.navigate;
+              }
+
+              // 2. ALWAYS ALLOW: Essential protocols for player interactivity
+              if (request.url.startsWith('blob:') ||
+                  request.url.startsWith('data:') ||
+                  request.url.startsWith('about:blank') ||
+                  request.url.startsWith('javascript:')) {
+                return NavigationDecision.navigate;
+              }
+
+              // 3. ALLOW: Known player patterns (many providers use subdomains/helpers)
+              if (request.url.contains('player') || 
+                  request.url.contains('embed') || 
+                  request.url.contains('rgshows.ru') ||
+                  request.url.contains('vidlink.pro')) {
+                return NavigationDecision.navigate;
+              }
+
+              // 4. BLOCK: External domains (this is where ad redirects go)
+              debugPrint('SMART REDIRECT BLOCK: ${request.url}');
+              return NavigationDecision.prevent;
+            },
+          ),
         )
         ..loadRequest(Uri.parse(widget.stream.url))
         ..runJavaScript('''
