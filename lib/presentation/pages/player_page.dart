@@ -96,8 +96,22 @@ class _PlayerPageState extends State<PlayerPage> {
                                request.url.startsWith('data:') ||
                                request.url.startsWith('about:blank');
 
-              if (isAllowed) return NavigationDecision.navigate;
+              // 4. BLACKLIST: Known ad networks and malicious patterns
+              final blacklist = [
+                'adsterra', 'admaven', 'popads', 'onclickads', 'tracking',
+                'doubleclick', 'analytics', 'ads', 'promo', 'offer'
+              ];
               
+              bool isBlacklisted = blacklist.any((pattern) => request.url.toLowerCase().contains(pattern));
+              
+              if (isBlacklisted) {
+                debugPrint('BLACKLISTED REDIRECT BLOCKED: ${request.url}');
+                return NavigationDecision.prevent;
+              }
+
+              if (isAllowed) return NavigationDecision.navigate;
+
+              // 5. BLOCK EVERYTHING ELSE
               debugPrint('BLOCKED REDIRECT: ${request.url}');
               return NavigationDecision.prevent;
             },

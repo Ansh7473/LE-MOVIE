@@ -52,11 +52,18 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
           'gstatic.com', 'akamaized.net', 'm3u8', 'ts'
         ];
 
+        // 3. BLACKLIST: Known ad networks
+        final blacklist = [
+          'adsterra', 'admaven', 'popads', 'onclickads', 'tracking',
+          'doubleclick', 'analytics', 'ads', 'promo', 'offer'
+        ];
+
+        bool isBlacklisted = blacklist.any((pattern) => url.toLowerCase().contains(pattern));
         bool isAllowed = allowedDomains.any((domain) => url.contains(domain)) ||
                          url.contains('player') || 
                          url.contains('embed');
 
-        if (!isAllowed) {
+        if (isBlacklisted || !isAllowed) {
           debugPrint('WINDOWS GLOBAL REDIRECT BLOCKED: $url');
           _controller!.loadUrl(widget.stream.url); // Force back to player
         }

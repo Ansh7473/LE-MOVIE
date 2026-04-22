@@ -45,25 +45,42 @@
   <script>
     // Global Popup & Redirect Blocker
     (function() {
-      // 1. Block window.open (Popups)
+      // 1. Block window.open (Popups) - Aggressive Version
       const originalOpen = window.open;
       window.open = function(url, name, specs) {
         console.warn('GLOBAL POPUP BLOCKED:', url);
-        // If the user meant "redirect tab should open" in a specific way, 
-        // we could handle it here, but they said "no popu windows".
-        return null; 
+        return { 
+          closed: true, 
+          focus: function() {}, 
+          close: function() {},
+          blur: function() {} 
+        }; // Return a dummy object to satisfy scripts
       };
 
       // 2. Prevent Top-level Redirection from Iframes
-      // This trick helps prevent iframes from changing window.top.location
-      let lastLocation = window.location.href;
-      window.onbeforeunload = function(e) {
-        // If the location is changing but it's not a user-initiated navigation 
-        // (within the Flutter app), we try to block it.
-        // Note: Modern browsers have strict limits on what this can do.
-      };
+      // We monitor for any attempt to change top-level location
+      window.addEventListener('beforeunload', function(e) {
+        // Unfortunately, modern browsers require a user interaction 
+        // to show a confirmation, but we can log it.
+        console.warn('Potential redirect detected');
+      });
 
-      // 3. Block common ad-script behaviors
+      // 3. Click Interception (Global)
+      // This catches any links that might be dynamically created
+      document.addEventListener('click', function(e) {
+        let target = e.target;
+        while (target && target.tagName !== 'A') target = target.parentNode;
+        if (target && target.tagName === 'A') {
+          if (target.target === '_blank' || target.href.includes('ad') || target.href.includes('track')) {
+            console.log('Blocking suspicious link:', target.href);
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
+      }, true);
+
+      // 4. Block common ad-script behaviors
       window.alert = function() { return true; };
       window.confirm = function() { return true; };
       window.prompt = function() { return null; };
