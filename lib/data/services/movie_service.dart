@@ -164,6 +164,24 @@ class MovieService {
       const String themeColor = '00A8E1'; // Blue theme
 
       addServer(
+        'VidSrc.to (Premium)',
+        'https://vidsrc.to/embed/movie/$id',
+        'https://vidsrc.to/embed/tv/$id/$season/$episode',
+      );
+
+      addServer(
+        'VidSrc.me (Direct)',
+        'https://vidsrc.me/embed/movie?tmdb=$id',
+        'https://vidsrc.me/embed/tv?tmdb=$id&s=$season&e=$episode',
+      );
+
+      addServer(
+        'SuperEmbed',
+        'https://multiembed.mov/directstream.php?video_id=$id&tmdb=1',
+        'https://multiembed.mov/directstream.php?video_id=$id&tmdb=1&s=$season&e=$episode',
+      );
+
+      addServer(
         'VidCore (Fast)',
         'https://vidcore.net/movie/$id?autoPlay=true&theme=$themeColor&title=true&poster=true',
         'https://vidcore.net/tv/$id/$season/$episode?autoPlay=true&theme=$themeColor&nextButton=true&autoNext=true&title=true&poster=true',
