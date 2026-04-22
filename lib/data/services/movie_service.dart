@@ -136,7 +136,10 @@ class MovieService {
           'VidBox (Premium)',
           'https://vidbox.dev/api/hdmovies/embed?type=movie&id=$imdbId',
           'https://vidbox.dev/api/hdmovies/embed?type=tv&id=$imdbId&s=$season&e=$episode',
-          customHeaders: {'Referer': 'https://vidbox.dev/'},
+          customHeaders: {
+            'Referer': 'https://ww2-fmovies.com/',
+            'Origin': 'https://vidbox.dev',
+          },
         );
       }
 
