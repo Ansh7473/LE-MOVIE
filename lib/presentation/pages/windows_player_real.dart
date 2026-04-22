@@ -33,27 +33,31 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
       await _controller!.setBackgroundColor(Colors.black);
       await _controller!.loadUrl(widget.stream.url);
       
-      // Smart Redirect Blocking for Windows
       _controller!.url.listen((url) {
+        // Smart Redirect Blocking for Windows (Global)
         if (url == 'about:blank' || url.isEmpty) return;
         
         final currentUri = Uri.parse(widget.stream.url);
         final newUri = Uri.parse(url);
         
-        // If the host changes to something unrelated, it's likely a redirect
-        if (newUri.host.isNotEmpty && 
-            newUri.host != currentUri.host && 
-            !url.contains('player') && 
-            !url.contains('embed') &&
-            !url.contains('rgshows.ru') &&
-            !url.contains('vidlink.pro') &&
-            !url.contains('vidbox.to') &&
-            !url.contains('vidbox.cc') &&
-            !url.contains('vidbox.dev') &&
-            !url.contains('vidsrc.vip') &&
-            !url.contains('vidplus.to') &&
-            !url.contains('cloudflare.com')) {
-          debugPrint('WINDOWS REDIRECT BLOCKED: $url');
+        // 1. ALWAYS ALLOW: Same host
+        if (newUri.host == currentUri.host) return;
+
+        // 2. ALLOW: Verified Streaming Infrastructure
+        final allowedDomains = [
+          'tmdb.org', 'cloudflare.com', 'videasy.net', 'vidsrc.wtf', 
+          'vidsrc.to', 'vidsrc.me', 'vidsrc.vip', 'vidlink.pro',
+          'vidbox.to', 'vidbox.cc', 'vidbox.dev', 'vidplus.to',
+          'rgshows.ru', 'anixtv.in', 'boomboxapp.in', 'google.com',
+          'gstatic.com', 'akamaized.net', 'm3u8', 'ts'
+        ];
+
+        bool isAllowed = allowedDomains.any((domain) => url.contains(domain)) ||
+                         url.contains('player') || 
+                         url.contains('embed');
+
+        if (!isAllowed) {
+          debugPrint('WINDOWS GLOBAL REDIRECT BLOCKED: $url');
           _controller!.loadUrl(widget.stream.url); // Force back to player
         }
       });

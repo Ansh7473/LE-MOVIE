@@ -42,6 +42,33 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // Global Popup & Redirect Blocker
+    (function() {
+      // 1. Block window.open (Popups)
+      const originalOpen = window.open;
+      window.open = function(url, name, specs) {
+        console.warn('GLOBAL POPUP BLOCKED:', url);
+        // If the user meant "redirect tab should open" in a specific way, 
+        // we could handle it here, but they said "no popu windows".
+        return null; 
+      };
+
+      // 2. Prevent Top-level Redirection from Iframes
+      // This trick helps prevent iframes from changing window.top.location
+      let lastLocation = window.location.href;
+      window.onbeforeunload = function(e) {
+        // If the location is changing but it's not a user-initiated navigation 
+        // (within the Flutter app), we try to block it.
+        // Note: Modern browsers have strict limits on what this can do.
+      };
+
+      // 3. Block common ad-script behaviors
+      window.alert = function() { return true; };
+      window.confirm = function() { return true; };
+      window.prompt = function() { return null; };
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

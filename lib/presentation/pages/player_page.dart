@@ -84,12 +84,12 @@ class _PlayerPageState extends State<PlayerPage> {
               final currentUri = Uri.parse(widget.stream.url);
               final requestUri = Uri.parse(request.url);
 
-              // 1. ALWAYS ALLOW: Internal navigations (same host) or relative paths
+              // 1. ALWAYS ALLOW: Internal navigations or same-origin requests
               if (requestUri.host == currentUri.host || requestUri.host.isEmpty) {
                 return NavigationDecision.navigate;
               }
 
-              // 2. ALWAYS ALLOW: Essential protocols for player interactivity
+              // 2. ALWAYS ALLOW: Essential protocols and local data
               if (request.url.startsWith('blob:') ||
                   request.url.startsWith('data:') ||
                   request.url.startsWith('about:blank') ||
@@ -97,22 +97,28 @@ class _PlayerPageState extends State<PlayerPage> {
                 return NavigationDecision.navigate;
               }
 
-              // 3. ALLOW: Known player patterns (many providers use subdomains/helpers)
-              if (request.url.contains('player') || 
-                  request.url.contains('embed') || 
-                  request.url.contains('rgshows.ru') ||
-                  request.url.contains('vidlink.pro') ||
-                  request.url.contains('vidbox.to') ||
-                  request.url.contains('vidbox.cc') ||
-                  request.url.contains('vidbox.dev') ||
-                  request.url.contains('vidsrc.vip') ||
-                  request.url.contains('vidplus.to') ||
-                  request.url.contains('cloudflare.com')) {
+              // 3. ALLOW: Verified Streaming Infrastructure (TMDB, Cloudflare, known providers)
+              final allowedDomains = [
+                'tmdb.org', 'cloudflare.com', 'videasy.net', 'vidsrc.wtf', 
+                'vidsrc.to', 'vidsrc.me', 'vidsrc.vip', 'vidlink.pro',
+                'vidbox.to', 'vidbox.cc', 'vidbox.dev', 'vidplus.to',
+                'rgshows.ru', 'anixtv.in', 'boomboxapp.in', 'google.com',
+                'gstatic.com', 'akamaized.net', 'm3u8', 'ts'
+              ];
+
+              bool isAllowed = allowedDomains.any((domain) => request.url.contains(domain)) ||
+                               request.url.contains('player') || 
+                               request.url.contains('embed');
+
+              if (isAllowed) {
                 return NavigationDecision.navigate;
               }
 
-              // 4. BLOCK: External domains (this is where ad redirects go)
-              debugPrint('SMART REDIRECT BLOCK: ${request.url}');
+              // 4. BLOCK & LOG: Everything else is treated as a malicious ad/redirect
+              debugPrint('CRITICAL REDIRECT BLOCKED (Global): ${request.url}');
+              
+              // If the user meant "redirect tab should open", we could potentially 
+              // launch it externally here, but "no popu windows" takes priority.
               return NavigationDecision.prevent;
             },
           ),
