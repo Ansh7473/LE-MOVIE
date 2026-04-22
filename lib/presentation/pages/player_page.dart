@@ -102,7 +102,10 @@ class _PlayerPageState extends State<PlayerPage> {
                   request.url.contains('embed') || 
                   request.url.contains('rgshows.ru') ||
                   request.url.contains('vidlink.pro') ||
+                  request.url.contains('vidbox.to') ||
+                  request.url.contains('vidbox.cc') ||
                   request.url.contains('vidbox.dev') ||
+                  request.url.contains('vidsrc.vip') ||
                   request.url.contains('vidplus.to') ||
                   request.url.contains('cloudflare.com')) {
                 return NavigationDecision.navigate;

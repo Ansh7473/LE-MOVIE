@@ -47,7 +47,10 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
             !url.contains('embed') &&
             !url.contains('rgshows.ru') &&
             !url.contains('vidlink.pro') &&
+            !url.contains('vidbox.to') &&
+            !url.contains('vidbox.cc') &&
             !url.contains('vidbox.dev') &&
+            !url.contains('vidsrc.vip') &&
             !url.contains('vidplus.to') &&
             !url.contains('cloudflare.com')) {
           debugPrint('WINDOWS REDIRECT BLOCKED: $url');

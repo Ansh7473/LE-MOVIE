@@ -130,18 +130,26 @@ class MovieService {
         ));
       }
 
-      // 0. NEW: VidBox (Uses IMDB ID)
-      if (imdbId != null && imdbId.isNotEmpty) {
-        addServer(
-          'VidBox (Premium)',
-          'https://vidbox.dev/api/hdmovies/embed?type=movie&id=$imdbId',
-          'https://vidbox.dev/api/hdmovies/embed?type=tv&id=$imdbId&s=$season&e=$episode',
-          customHeaders: {
-            'Referer': 'https://ww2-fmovies.com/',
-            'Origin': 'https://vidbox.dev',
-          },
-        );
-      }
+      // 0. VidBox Watch Page (Uses TMDB ID - full page load, NOT embed API)
+      // The /api/hdmovies/embed endpoint is permanently blocked by Cloudflare Turnstile.
+      // The /watch/ page returns 200 OK and loads the player client-side.
+      addServer(
+        'VidBox (Premium)',
+        'https://vidbox.to/watch/movie?id=$id',
+        'https://vidbox.to/watch/tv?id=$id&s=$season&e=$episode',
+        customHeaders: {
+          'Referer': 'https://vidbox.to/',
+          'Origin': 'https://vidbox.to',
+        },
+      );
+
+      // 0.05 VidSrc VIP (Direct source, uses TMDB ID)
+      addServer(
+        'VidSrc VIP (Fast)',
+        'https://vidsrc.vip/embed/movie/$id',
+        'https://vidsrc.vip/embed/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://vidsrc.vip/'},
+      );
 
       // 0.1 NEW: VidPlus Anime (Premium)
       // Note: Supports sub/dub. Using TMDB ID as fallback for now.
