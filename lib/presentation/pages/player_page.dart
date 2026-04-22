@@ -124,8 +124,10 @@ class _PlayerPageState extends State<PlayerPage> {
           window.alert = function() { return true; };
           window.confirm = function() { return true; };
           
-          // Block any script-based location changes that bypass navigation delegate
-          window.onbeforeunload = function() { return null; };
+          // Focus Lock: If an ad tries to open a popup, focus back immediately
+          window.addEventListener('blur', function() {
+            setTimeout(function() { window.focus(); }, 1);
+          });
           
           // Disable any target="_blank" links dynamically
           document.addEventListener('click', function(e) {

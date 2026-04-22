@@ -80,6 +80,25 @@
         }
       }, true);
 
+      // 5. Lockdown Mode: Monitor window focus
+      // If an ad tries to open a popup, the window will lose focus.
+      // We try to prevent the browser from allowing the popup to steal focus.
+      window.addEventListener('blur', function() {
+        if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+          console.warn('AD ATTEMPT DETECTED: Focusing back...');
+          window.focus();
+        }
+      });
+
+      // 6. Block Top-Level Navigation specifically from Iframes
+      // This is a last-resort hack for non-sandboxed iframes
+      window.onbeforeunload = function() {
+        // If we are on the player page, we try to stay there
+        if (window.location.hash.includes('player') || window.location.href.includes('player')) {
+           return "LE-MOVIE: A redirect was blocked. Stay here to continue watching.";
+        }
+      };
+
       // 4. Block common ad-script behaviors
       window.alert = function() { return true; };
       window.confirm = function() { return true; };
