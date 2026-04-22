@@ -136,8 +136,18 @@ class MovieService {
           'VidBox (Premium)',
           'https://vidbox.dev/api/hdmovies/embed?type=movie&id=$imdbId',
           'https://vidbox.dev/api/hdmovies/embed?type=tv&id=$imdbId&s=$season&e=$episode',
+          customHeaders: {'Referer': 'https://vidbox.dev/'},
         );
       }
+
+      // 0.1 NEW: VidPlus Anime (Premium)
+      // Note: Supports sub/dub. Using TMDB ID as fallback for now.
+      addServer(
+        'VidPlus Anime (Premium)',
+        'https://player.vidplus.to/embed/anime/$id/1?dub=true',
+        'https://player.vidplus.to/embed/anime/$id/$episode?dub=true',
+        customHeaders: {'Referer': 'https://player.vidplus.to/'},
+      );
 
       // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
       addServer(
@@ -161,6 +171,7 @@ class MovieService {
         'VidPlus (Premium)',
         'https://player.vidplus.to/embed/movie/$id',
         'https://player.vidplus.to/embed/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://player.vidplus.to/'},
       );
       addServer(
         'HyperLink (vidsrc 1)',
