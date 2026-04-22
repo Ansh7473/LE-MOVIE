@@ -160,6 +160,112 @@ class MovieService {
         customHeaders: {'Referer': 'https://player.vidplus.to/'},
       );
 
+      // --- NEW SERVERS FROM ANIXTV.IN ---
+      const String themeColor = '00A8E1'; // Blue theme
+
+      addServer(
+        'VidCore (Fast)',
+        'https://vidcore.net/movie/$id?autoPlay=true&theme=$themeColor&title=true&poster=true',
+        'https://vidcore.net/tv/$id/$season/$episode?autoPlay=true&theme=$themeColor&nextButton=true&autoNext=true&title=true&poster=true',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidPlays',
+        'https://vidplays.fun/embed/movie/$id',
+        'https://vidplays.fun/embed/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidZen (Self/Multi)',
+        'https://anixtv.vidzen.fun/movie/$id',
+        'https://anixtv.vidzen.fun/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'EmbedMaster',
+        'https://embedmaster.link/movie/$id',
+        'https://embedmaster.link/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidEasy',
+        'https://player.videasy.net/movie/$id?color=$themeColor&nextEpisode=true&autoplayNextEpisode=true',
+        'https://player.videasy.net/tv/$id/$season/$episode?color=$themeColor&nextEpisode=true&autoplayNextEpisode=true',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidNest',
+        'https://vidnest.fun/movie/$id',
+        'https://vidnest.fun/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidFast',
+        'https://vidfast.pro/movie/$id?autoPlay=true&theme=$themeColor',
+        'https://vidfast.pro/tv/$id/$season/$episode?autoPlay=true&theme=$themeColor',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'Vidify (Hindi/Premium)',
+        'https://player.vidify.top/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
+        'https://player.vidify.top/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
+        'Mapple (Premium)',
+        'https://mapple.uk/watch/movie/$id',
+        'https://mapple.uk/watch/tv/$id-$season-$episode',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
+        'OniStream (Multi)',
+        'https://onistream.vercel.app/embed/movie/$id',
+        'https://onistream.vercel.app/embed/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
+        'VidPlus (Hindi)',
+        'https://player.vidplus.to/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
+        'https://player.vidplus.to/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
+        'VidLink (Multi)',
+        'https://vidlink.pro/movie/$id',
+        'https://vidlink.pro/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://vidlink.pro/'},
+      );
+
+      addServer(
+        'AutoEmbed (Direct)',
+        'https://player.autoembed.cc/embed/movie/$id',
+        'https://player.autoembed.cc/embed/tv/$id/$season/$episode',
+      );
+
+      addServer(
+        '2Embed (Global)',
+        'https://www.2embed.cc/embed/$id',
+        'https://www.2embed.cc/embedtv/$id&s=$season&e=$episode',
+      );
+
+      addServer(
+        'VidSrc WTF (v1)',
+        'https://vidsrc.wtf/api/1/movie/?id=$id',
+        'https://vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode',
+      );
+      // ------------------------------------
+
       // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
       addServer(
         'RGShow 2 (Videasy-Hindi)',
