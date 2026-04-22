@@ -122,7 +122,8 @@ class MovieService {
       final List<StreamModel> streams = [];
 
       void addServer(String name, String movieUrl, String tvUrl, {Map<String, String>? customHeaders}) {
-        final bool isHindi = name.toLowerCase().contains('hindi');
+        final bool isHindi = name.toLowerCase().contains('hindi') || 
+                            movieUrl.toLowerCase().contains('hindi');
         streams.add(StreamModel(
           language: name,
           url: isMovie ? movieUrl : tvUrl,
@@ -255,7 +256,7 @@ class MovieService {
       );
 
       addServer(
-        'VidPlus (Hindi)',
+        'VidPlus ',
         'https://player.vidplus.to/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
         'https://player.vidplus.to/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
         customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
