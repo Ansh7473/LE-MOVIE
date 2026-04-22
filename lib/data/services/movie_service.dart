@@ -122,73 +122,19 @@ class MovieService {
       final List<StreamModel> streams = [];
 
       void addServer(String name, String movieUrl, String tvUrl, {Map<String, String>? customHeaders}) {
+        final bool isHindi = name.toLowerCase().contains('hindi');
         streams.add(StreamModel(
           language: name,
           url: isMovie ? movieUrl : tvUrl,
           headers: customHeaders ?? {'Referer': 'https://ww2-fmovies.com/'},
           isIframe: true,
+          isHindi: isHindi,
         ));
       }
 
-      // ─── HINDI & MULTI-LANG SERVERS (TOP PRIORITY) ──────────────────────────
-      const String themeColor = '00A8E1'; // Blue theme
-
-      addServer(
-        'VidZen (Hindi/Multi)',
-        'https://anixtv.vidzen.fun/movie/$id',
-        'https://anixtv.vidzen.fun/tv/$id/$season/$episode',
-        customHeaders: {'Referer': 'https://anixtv.in/'},
-      );
-
-      addServer(
-        'VidFast (Hindi Available)',
-        'https://vidfast.pro/movie/$id?autoPlay=true&theme=$themeColor',
-        'https://vidfast.pro/tv/$id/$season/$episode?autoPlay=true&theme=$themeColor',
-        customHeaders: {'Referer': 'https://anixtv.in/'},
-      );
-
-      addServer(
-        'Mapple (Premium/Hindi)',
-        'https://mapple.uk/watch/movie/$id',
-        'https://mapple.uk/watch/tv/$id-$season-$episode',
-        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
-      );
-
-      addServer(
-        'Vidify (Hindi/Premium)',
-        'https://player.vidify.top/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
-        'https://player.vidify.top/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
-        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
-      );
-
-      addServer(
-        'VidPlus (Hindi/Premium)',
-        'https://player.vidplus.to/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
-        'https://player.vidplus.to/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
-        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
-      );
-
-      addServer(
-        'RGShow 2 (Videasy-Hindi)',
-        'https://rgshows.ru/player/movies/api2/index.html?id=$id&color=e01621',
-        'https://rgshows.ru/player/series/api2/index.html?id=$id&s=$season&e=$episode&color=e01621',
-        customHeaders: {'Referer': 'https://rgshows.ru/'},
-      );
-
-      addServer(
-        'RGShow 3 (Multi-Lang-Hindi)',
-        'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
-        'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
-        customHeaders: {'Referer': 'https://rgshows.ru/'},
-      );
-
-      addServer(
-        'NexaStream (vidsrc 2-Hindi)',
-        'https://vidsrc.wtf/api/2/movie/?id=$id&color=215fb3',
-        'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
-      );
-
-      // ─── PREMIUM & FAST SERVERS (ENGLISH/GLOBAL) ──────────────────────────
+      // 0. VidBox Watch Page (Uses TMDB ID - full page load, NOT embed API)
+      // The /api/hdmovies/embed endpoint is permanently blocked by Cloudflare Turnstile.
+      // The /watch/ page returns 200 OK and loads the player client-side.
       addServer(
         'VidBox (Premium)',
         'https://vidbox.to/watch/movie?id=$id',
@@ -199,6 +145,7 @@ class MovieService {
         },
       );
 
+      // 0.05 VidSrc VIP (Direct source, uses TMDB ID)
       addServer(
         'VidSrc VIP (Fast)',
         'https://vidsrc.vip/embed/movie/$id',
@@ -206,10 +153,34 @@ class MovieService {
         customHeaders: {'Referer': 'https://vidsrc.vip/'},
       );
 
+      // 0.1 NEW: VidPlus Anime (Premium)
+      // Note: Supports sub/dub. Using TMDB ID as fallback for now.
+      addServer(
+        'VidPlus Anime (Premium)',
+        'https://player.vidplus.to/embed/anime/$id/1?dub=true',
+        'https://player.vidplus.to/embed/anime/$id/$episode?dub=true',
+        customHeaders: {'Referer': 'https://player.vidplus.to/'},
+      );
+
+      // --- NEW SERVERS FROM ANIXTV.IN ---
+      const String themeColor = '00A8E1'; // Blue theme
+
       addServer(
         'VidSrc.to (Premium)',
         'https://vidsrc.to/embed/movie/$id',
         'https://vidsrc.to/embed/tv/$id/$season/$episode',
+      );
+
+      addServer(
+        'VidSrc.me (Direct)',
+        'https://vidsrc.me/embed/movie?tmdb=$id',
+        'https://vidsrc.me/embed/tv?tmdb=$id&s=$season&e=$episode',
+      );
+
+      addServer(
+        'SuperEmbed',
+        'https://multiembed.mov/directstream.php?video_id=$id&tmdb=1',
+        'https://multiembed.mov/directstream.php?video_id=$id&tmdb=1&s=$season&e=$episode',
       );
 
       addServer(
@@ -227,24 +198,9 @@ class MovieService {
       );
 
       addServer(
-        'VidPlus Anime (Premium)',
-        'https://player.vidplus.to/embed/anime/$id/1?dub=true',
-        'https://player.vidplus.to/embed/anime/$id/$episode?dub=true',
-        customHeaders: {'Referer': 'https://player.vidplus.to/'},
-      );
-
-      // ─── FALLBACK & ADDITIONAL SERVERS ──────────────────────────────────
-      addServer(
-        'VidLink (Multi)',
-        'https://vidlink.pro/movie/$id',
-        'https://vidlink.pro/tv/$id/$season/$episode',
-        customHeaders: {'Referer': 'https://vidlink.pro/'},
-      );
-
-      addServer(
-        'VidNest',
-        'https://vidnest.fun/movie/$id',
-        'https://vidnest.fun/tv/$id/$season/$episode',
+        'VidZen (Self/Multi)-HINDI Available',
+        'https://anixtv.vidzen.fun/movie/$id',
+        'https://anixtv.vidzen.fun/tv/$id/$season/$episode',
         customHeaders: {'Referer': 'https://anixtv.in/'},
       );
 
@@ -256,6 +212,42 @@ class MovieService {
       );
 
       addServer(
+        'VidEasy',
+        'https://player.videasy.net/movie/$id?color=$themeColor&nextEpisode=true&autoplayNextEpisode=true',
+        'https://player.videasy.net/tv/$id/$season/$episode?color=$themeColor&nextEpisode=true&autoplayNextEpisode=true',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidNest',
+        'https://vidnest.fun/movie/$id',
+        'https://vidnest.fun/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      addServer(
+        'VidFast(HINDI Available)',
+        'https://vidfast.pro/movie/$id?autoPlay=true&theme=$themeColor',
+        'https://vidfast.pro/tv/$id/$season/$episode?autoPlay=true&theme=$themeColor',
+        customHeaders: {'Referer': 'https://anixtv.in/'},
+      );
+
+      // --- SERVERS SOURCED FROM BOOMBOXAPP.IN ---
+      addServer(
+        'Vidify (Hindi/Premium)',
+        'https://player.vidify.top/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
+        'https://player.vidify.top/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
+        'Mapple (Premium)--HINDI Available',
+        'https://mapple.uk/watch/movie/$id',
+        'https://mapple.uk/watch/tv/$id-$season-$episode',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+
+      addServer(
         'OniStream (Multi)',
         'https://onistream.vercel.app/embed/movie/$id',
         'https://onistream.vercel.app/embed/tv/$id/$season/$episode',
@@ -263,9 +255,18 @@ class MovieService {
       );
 
       addServer(
-        'VidSrc.me (Direct)',
-        'https://vidsrc.me/embed/movie?tmdb=$id',
-        'https://vidsrc.me/embed/tv?tmdb=$id&s=$season&e=$episode',
+        'VidPlus (Hindi)',
+        'https://player.vidplus.to/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
+        'https://player.vidplus.to/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
+        customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
+      );
+      // ------------------------------------------
+
+      addServer(
+        'VidLink (Multi)',
+        'https://vidlink.pro/movie/$id',
+        'https://vidlink.pro/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://vidlink.pro/'},
       );
 
       addServer(
@@ -285,43 +286,103 @@ class MovieService {
         'https://vidsrc.wtf/api/1/movie/?id=$id',
         'https://vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode',
       );
+      // ------------------------------------
 
+      // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
+      addServer(
+        'RGShow 2 (Videasy-Hindi)',
+        'https://rgshows.ru/player/movies/api2/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api2/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 3 (Multi-Lang-Hindi)',
+        'https://rgshows.ru/player/movies/api3/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api3/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'NexaStream (vidsrc 2-Hindi)',
+        'https://vidsrc.wtf/api/2/movie/?id=$id&color=215fb3',
+        'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
+      );
+      addServer(
+        'VidPlus (Premium)',
+        'https://player.vidplus.to/embed/movie/$id',
+        'https://player.vidplus.to/embed/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://player.vidplus.to/'},
+      );
+      addServer(
+        'HyperLink (vidsrc 1)',
+        'https://vidsrc.wtf/api/1/movie/?id=$id&color=215fb3',
+        'https://vidsrc.wtf/api/1/tv/?id=$id&s=$season&e=$episode&color=215fb3',
+      );
       addServer(
         'CloudBox',
         'https://vidify.top/embed/movie/$id',
         'https://vidify.top/embed/tv/$id/$season/$episode',
       );
-
       addServer(
         'UpCloud (vidsrc.co)',
         'https://player.vidsrc.co/embed/movie/$id',
         'https://player.vidsrc.co/embed/tv/$id/$season/$episode',
       );
-
+      addServer(
+        'VidLink Pro',
+        'https://vidlink.pro/movie/$id',
+        'https://vidlink.pro/tv/$id/$season/$episode',
+        customHeaders: {'Referer': 'https://vidlink.pro/'},
+      );
+      addServer(
+        'RGShow 1 (Multi)',
+        'https://rgshows.ru/player/movies/api1/index.html?id=$id&color=e01621',
+        'https://rgshows.ru/player/series/api1/index.html?id=$id&s=$season&e=$episode&color=e01621',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 4 (Premium)',
+        'https://rgshows.ru/player/movies/api4/index.html?id=$id',
+        'https://rgshows.ru/player/series/api4/index.html?id=$id&s=$season&e=$episode',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
+      addServer(
+        'RGShow 5 (Embeds)',
+        'https://rgshows.ru/player/movies/api5/index.html?id=$id',
+        'https://rgshows.ru/player/series/api5/index.html?id=$id&s=$season&e=$episode',
+        customHeaders: {'Referer': 'https://rgshows.ru/'},
+      );
       addServer(
         'StreamVault',
         'https://hexa.watch/watch/movie/$id',
         'https://hexa.watch/watch/tv/$id/$season/$episode',
       );
-
       addServer(
         'MediaHub',
         'https://spencerdevs.xyz/movie/$id?theme=215fb3',
         'https://spencerdevs.xyz/tv/$id/$season/$episode?theme=215fb3',
       );
-
       addServer(
         'CloudPlay (vidsrc.cc)',
         'https://vidsrc.cc/v2/embed/movie/$id',
         'https://vidsrc.cc/v2/embed/tv/$id/$season/$episode',
       );
-
+      addServer(
+        'StreamBoxHD',
+        'https://test.autoembed.cc/embed/movie/$id',
+        'https://test.autoembed.cc/embed/tv/$id/$season/$episode',
+      );
       addServer(
         'MovieVault',
         'https://rivestream.org/embed?type=movie&id=$id',
         'https://rivestream.org/embed?type=tv&id=$id&s=$season&e=$episode',
       );
 
+      // Sort: Hindi servers first
+      streams.sort((a, b) {
+        if (a.isHindi && !b.isHindi) return -1;
+        if (!a.isHindi && b.isHindi) return 1;
+        return 0;
+      });
 
       return streams;
     } catch (e) {

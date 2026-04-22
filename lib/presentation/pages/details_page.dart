@@ -348,12 +348,40 @@ class _DetailsPageState extends State<DetailsPage> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            s.language,
-                                            style: TextStyle(
-                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                              fontSize: 15,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  s.language,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                                    fontSize: 15,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (s.isHindi) ...[
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.orange.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                    border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                                                  ),
+                                                  child: const Text(
+                                                    'HINDI',
+                                                    style: TextStyle(
+                                                      color: Colors.orange,
+                                                      fontSize: 8,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           Text(
                                             'Premium High Speed Server',
