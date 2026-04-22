@@ -162,18 +162,18 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (homeProv.trendingMovies.isNotEmpty)
-          HeroCarousel(items: homeProv.trendingMovies.take(5).toList(), isDesktop: isDesktop),
+        if (homeProv.trendingTV.isNotEmpty)
+          HeroCarousel(items: homeProv.trendingTV.take(5).toList(), isDesktop: isDesktop, isTv: true),
+        const SizedBox(height: 40),
+        _buildSectionTitle('Trending TV Shows'),
+        const SizedBox(height: 15),
+        _buildHorizontalList(context, homeProv.trendingTV,
+            isTv: true, isDesktop: isDesktop),
         const SizedBox(height: 40),
         _buildSectionTitle('Trending Movies'),
         const SizedBox(height: 15),
         _buildHorizontalList(context, homeProv.trendingMovies,
             isTv: false, isDesktop: isDesktop),
-        const SizedBox(height: 40),
-        _buildSectionTitle('Trending TV Shows'),
-        const SizedBox(height: 15),
-        _buildHorizontalList(context, homeProv.topRatedTV,
-            isTv: true, isDesktop: isDesktop),
         const SizedBox(height: 40),
         _buildSectionTitle('Upcoming Movies'),
         const SizedBox(height: 15),
@@ -623,8 +623,9 @@ class _HomePageState extends State<HomePage> {
 class HeroCarousel extends StatefulWidget {
   final List items;
   final bool isDesktop;
+  final bool isTv;
 
-  const HeroCarousel({super.key, required this.items, required this.isDesktop});
+  const HeroCarousel({super.key, required this.items, required this.isDesktop, required this.isTv});
 
   @override
   State<HeroCarousel> createState() => _HeroCarouselState();
@@ -684,7 +685,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
               itemBuilder: (context, index) {
                 final item = widget.items[index];
                 return GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: widget.isTv))),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -718,7 +719,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                                 ElevatedButton.icon(
                                   icon: const Icon(Icons.play_arrow, color: Colors.blue),
                                   style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: EdgeInsets.symmetric(horizontal: widget.isDesktop ? 24 : 16, vertical: widget.isDesktop ? 18 : 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: false))),
+                                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsPage(showId: item.id, isTv: widget.isTv))),
                                   label: Text('Play Now', style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold, fontSize: widget.isDesktop ? 16 : 14)),
                                 ),
                               ],
