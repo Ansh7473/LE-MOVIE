@@ -46,7 +46,8 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
             !url.contains('player') && 
             !url.contains('embed') &&
             !url.contains('rgshows.ru') &&
-            !url.contains('vidlink.pro')) {
+            !url.contains('vidlink.pro') &&
+            !url.contains('vidbox.dev')) {
           debugPrint('WINDOWS REDIRECT BLOCKED: $url');
           _controller!.loadUrl(widget.stream.url); // Force back to player
         }

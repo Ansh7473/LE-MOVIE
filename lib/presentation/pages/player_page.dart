@@ -101,7 +101,8 @@ class _PlayerPageState extends State<PlayerPage> {
               if (request.url.contains('player') || 
                   request.url.contains('embed') || 
                   request.url.contains('rgshows.ru') ||
-                  request.url.contains('vidlink.pro')) {
+                  request.url.contains('vidlink.pro') ||
+                  request.url.contains('vidbox.dev')) {
                 return NavigationDecision.navigate;
               }
 
