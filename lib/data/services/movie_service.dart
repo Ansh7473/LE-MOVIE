@@ -139,18 +139,6 @@ class MovieService {
         );
       }
 
-      // 0.1 NEW: RGShow Direct (High Speed)
-      addServer(
-        'RGShow Direct 1',
-        'https://rgshows.ru/download/movies/index.html?id=$id',
-        'https://rgshows.ru/download/series/index.html?id=$id',
-      );
-      addServer(
-        'RGShow Direct 2 (Hindi)',
-        'https://rgshows.ru/download/movies/index.html?id=$id',
-        'https://rgshows.ru/download/series/index.html?id=$id',
-      );
-
       // Hardcoded server list extracted directly from ww2-fmovies.com frontend JS
       addServer(
         'RGShow 2 (Videasy-Hindi)',
@@ -170,7 +158,7 @@ class MovieService {
         'https://vidsrc.wtf/api/2/tv/?id=$id&s=$season&e=$episode&color=215fb3',
       );
       addServer(
-        'UltraBox',
+        'VidPlus (Premium)',
         'https://player.vidplus.to/embed/movie/$id',
         'https://player.vidplus.to/embed/tv/$id/$season/$episode',
       );
