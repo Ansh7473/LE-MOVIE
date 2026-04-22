@@ -125,7 +125,7 @@ class MovieService {
         streams.add(StreamModel(
           language: name,
           url: isMovie ? movieUrl : tvUrl,
-          headers: customHeaders ?? {'Referer': 'https://ww2-fmovies.com/', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'},
+          headers: customHeaders ?? {'Referer': 'https://ww2-fmovies.com/'},
           isIframe: true,
         ));
       }
@@ -136,7 +136,6 @@ class MovieService {
           'VidBox (Premium)',
           'https://vidbox.dev/api/hdmovies/embed?type=movie&id=$imdbId',
           'https://vidbox.dev/api/hdmovies/embed?type=tv&id=$imdbId&s=$season&e=$episode',
-          customHeaders: {'Referer': 'https://vidbox.dev/'},
         );
       }
 
