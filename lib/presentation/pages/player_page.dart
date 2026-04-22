@@ -81,23 +81,6 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onNavigationRequest: (NavigationRequest request) {
-              final currentUri = Uri.parse(widget.stream.url);
-              final requestUri = Uri.parse(request.url);
-
-              // 1. ALWAYS ALLOW: Internal navigations or same-origin requests
-              if (requestUri.host == currentUri.host || requestUri.host.isEmpty) {
-                return NavigationDecision.navigate;
-              }
-
-              // 2. ALWAYS ALLOW: Essential protocols and local data
-              if (request.url.startsWith('blob:') ||
-                  request.url.startsWith('data:') ||
-                  request.url.startsWith('about:blank') ||
-                  request.url.startsWith('javascript:')) {
-                return NavigationDecision.navigate;
-              }
-
-              // 3. ALLOW: Verified Streaming Infrastructure (TMDB, Cloudflare, known providers)
               final allowedDomains = [
                 'tmdb.org', 'cloudflare.com', 'videasy.net', 'vidsrc.wtf', 
                 'vidsrc.to', 'vidsrc.me', 'vidsrc.vip', 'vidlink.pro',
@@ -108,35 +91,38 @@ class _PlayerPageState extends State<PlayerPage> {
 
               bool isAllowed = allowedDomains.any((domain) => request.url.contains(domain)) ||
                                request.url.contains('player') || 
-                               request.url.contains('embed');
+                               request.url.contains('embed') ||
+                               request.url.startsWith('blob:') ||
+                               request.url.startsWith('data:') ||
+                               request.url.startsWith('about:blank');
 
-              if (isAllowed) {
-                return NavigationDecision.navigate;
-              }
-
-              // 4. BLOCK & LOG: Everything else is treated as a malicious ad/redirect
-              debugPrint('CRITICAL REDIRECT BLOCKED (Global): ${request.url}');
+              if (isAllowed) return NavigationDecision.navigate;
               
-              // If the user meant "redirect tab should open", we could potentially 
-              // launch it externally here, but "no popu windows" takes priority.
+              debugPrint('BLOCKED REDIRECT: ${request.url}');
               return NavigationDecision.prevent;
             },
           ),
         )
         ..loadRequest(Uri.parse(widget.stream.url))
         ..runJavaScript('''
-          // Refined window.open blocker (Allows internal calls used by player menus)
-          const originalOpen = window.open;
-          window.open = function(url, name, specs) {
-            if (!url || url === 'about:blank' || url === '') {
-              return originalOpen.apply(window, arguments);
-            }
-            console.log('Blocked Popup to: ' + url);
-            return null;
-          };
-          
+          // Ultimate window.open and popup blocker
+          window.open = function() { return null; };
           window.alert = function() { return true; };
           window.confirm = function() { return true; };
+          
+          // Block any script-based location changes that bypass navigation delegate
+          window.onbeforeunload = function() { return null; };
+          
+          // Disable any target="_blank" links dynamically
+          document.addEventListener('click', function(e) {
+            var target = e.target;
+            while (target && target.tagName !== 'A') {
+              target = target.parentNode;
+            }
+            if (target && target.tagName === 'A' && target.target === '_blank') {
+              target.target = '_self';
+            }
+          }, true);
         ''');
     }
     setState(() {});

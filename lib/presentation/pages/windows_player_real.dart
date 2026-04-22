@@ -62,6 +62,22 @@ class _WindowsPlayerState extends State<WindowsPlayer> {
         }
       });
 
+      // Inject ultimate popup blocker into Windows WebView
+      await _controller!.executeScript('''
+        window.open = function() { return null; };
+        window.alert = function() { return true; };
+        window.confirm = function() { return true; };
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+          while (target && target.tagName !== 'A') {
+            target = target.parentNode;
+          }
+          if (target && target.tagName === 'A' && target.target === '_blank') {
+            target.target = '_self';
+          }
+        }, true);
+      ''');
+
       if (mounted) setState(() => _isReady = true);
     } catch (e) {
       debugPrint('Windows WebView Initialization Error: $e');
