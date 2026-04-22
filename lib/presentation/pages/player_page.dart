@@ -81,64 +81,48 @@ class _PlayerPageState extends State<PlayerPage> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onNavigationRequest: (NavigationRequest request) {
-              final allowedDomains = [
-                'tmdb.org', 'cloudflare.com', 'videasy.net', 'vidsrc.wtf', 
-                'vidsrc.to', 'vidsrc.me', 'vidsrc.vip', 'vidlink.pro',
-                'vidbox.to', 'vidbox.cc', 'vidbox.dev', 'vidplus.to',
-                'rgshows.ru', 'anixtv.in', 'boomboxapp.in', 'google.com',
-                'gstatic.com', 'akamaized.net', 'm3u8', 'ts'
-              ];
+              final initialHost = Uri.parse(widget.stream.url).host;
+              final requestUri = Uri.parse(request.url);
 
-              bool isAllowed = allowedDomains.any((domain) => request.url.contains(domain)) ||
-                               request.url.contains('player') || 
-                               request.url.contains('embed') ||
-                               request.url.startsWith('blob:') ||
-                               request.url.startsWith('data:') ||
-                               request.url.startsWith('about:blank');
-
-              // 4. BLACKLIST: Known ad networks and malicious patterns
-              final blacklist = [
-                'adsterra', 'admaven', 'popads', 'onclickads', 'tracking',
-                'doubleclick', 'analytics', 'ads', 'promo', 'offer'
-              ];
-              
-              bool isBlacklisted = blacklist.any((pattern) => request.url.toLowerCase().contains(pattern));
-              
-              if (isBlacklisted) {
-                debugPrint('BLACKLISTED REDIRECT BLOCKED: ${request.url}');
-                return NavigationDecision.prevent;
+              // STRICT ISOLATION: Only allow the initial host and essential protocols
+              if (requestUri.host == initialHost || 
+                  request.url.startsWith('blob:') || 
+                  request.url.startsWith('data:') || 
+                  request.url.startsWith('about:blank')) {
+                return NavigationDecision.navigate;
               }
 
-              if (isAllowed) return NavigationDecision.navigate;
-
-              // 5. BLOCK EVERYTHING ELSE
-              debugPrint('BLOCKED REDIRECT: ${request.url}');
+              debugPrint('ISOLATED PLAYER BLOCKED REDIRECT: ${request.url}');
               return NavigationDecision.prevent;
             },
           ),
         )
         ..loadRequest(Uri.parse(widget.stream.url))
         ..runJavaScript('''
-          // Ultimate window.open and popup blocker
-          window.open = function() { return null; };
-          window.alert = function() { return true; };
-          window.confirm = function() { return true; };
-          
-          // Focus Lock: If an ad tries to open a popup, focus back immediately
-          window.addEventListener('blur', function() {
-            setTimeout(function() { window.focus(); }, 1);
-          });
-          
-          // Disable any target="_blank" links dynamically
-          document.addEventListener('click', function(e) {
-            var target = e.target;
-            while (target && target.tagName !== 'A') {
-              target = target.parentNode;
+          // Persistent Popup Blocker Heartbeat
+          (function() {
+            function block() {
+              window.open = function() { return null; };
+              window.alert = function() { return true; };
+              window.confirm = function() { return true; };
             }
-            if (target && target.tagName === 'A' && target.target === '_blank') {
-              target.target = '_self';
-            }
-          }, true);
+            block();
+            setInterval(block, 100); // Re-apply every 100ms to fight ad-scripts
+            
+            // Link Hijacker
+            document.addEventListener('click', function(e) {
+              let target = e.target;
+              while (target && target.tagName !== 'A') target = target.parentNode;
+              if (target && target.tagName === 'A') {
+                target.target = '_self'; // Kill new tabs
+              }
+            }, true);
+
+            // Focus Recovery
+            window.addEventListener('blur', function() {
+              setTimeout(function() { window.focus(); }, 1);
+            });
+          })();
         ''');
     }
     setState(() {});
