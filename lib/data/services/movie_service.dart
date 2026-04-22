@@ -256,7 +256,7 @@ class MovieService {
       );
 
       addServer(
-        'VidPlus ',
+        'VidPlus english ',
         'https://player.vidplus.to/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
         'https://player.vidplus.to/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&download=true&server=hindi',
         customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
