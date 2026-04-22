@@ -234,7 +234,7 @@ class MovieService {
 
       // --- SERVERS SOURCED FROM BOOMBOXAPP.IN ---
       addServer(
-        'Vidify (Hindi/Premium)',
+        'Vidify (Premium)',
         'https://player.vidify.top/embed/movie/$id?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
         'https://player.vidify.top/embed/tv/$id/$season/$episode?primarycolor=$themeColor&autoplay=true&poster=true&server=hindi',
         customHeaders: {'Referer': 'https://www.boomboxapp.in/'},
