@@ -34,6 +34,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onNavChange(int index) {
+    setState(() => _activeNavIndex = index);
+    final homeProv = context.read<HomeProvider>();
+    if (index == 1) homeProv.loadMovies();
+    if (index == 2) homeProv.loadSeries();
+    if (index == 3) homeProv.loadGenres();
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeProv = context.watch<HomeProvider>();
@@ -120,10 +128,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               
-              // TV Series Section moved to TOP as requested
-              _buildSectionTitle('Binge-worthy Series'),
+              // TV Series Section - Using TrendingTV for "Latest" feel
+              _buildSectionTitle('Trending Series'),
               const SizedBox(height: 20),
-              _buildHorizontalList(context, homeProv.topRatedTV, isTv: true, isDesktop: isDesktop, delay: 0),
+              _buildHorizontalList(context, homeProv.trendingTV, isTv: true, isDesktop: isDesktop, delay: 0),
 
               const SizedBox(height: 50),
               _buildSectionTitle('Trending Movies'),
@@ -154,7 +162,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 40),
         _buildSectionTitle('Cinematic Masterpieces'),
         const SizedBox(height: 30),
-        if (homeProv.isLoading) _buildShimmerGrid() else _buildResponsiveGrid(homeProv.popularMovies, isTv: false),
+        if (homeProv.isLoadingCategory) _buildShimmerGrid() else _buildResponsiveGrid(homeProv.popularMovies, isTv: false),
       ],
     );
   }
@@ -167,7 +175,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 40),
         _buildSectionTitle('Binge-worthy Dramas'),
         const SizedBox(height: 30),
-        if (homeProv.isLoading) _buildShimmerGrid() else _buildResponsiveGrid(homeProv.popularTV, isTv: true),
+        if (homeProv.isLoadingCategory) _buildShimmerGrid() else _buildResponsiveGrid(homeProv.popularTV, isTv: true),
       ],
     );
   }
@@ -175,6 +183,13 @@ class _HomePageState extends State<HomePage> {
   // ─── View 3: Genres ─────────────────────────────────────────────────────────
   Widget _buildGenresView(HomeProvider homeProv, bool isDesktop) {
     final activeGenres = _isTvGenre ? homeProv.tvGenres : homeProv.movieGenres;
+
+    if (homeProv.isLoadingCategory && activeGenres.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 100),
+        child: _buildShimmerGrid(),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +369,7 @@ class _HomePageState extends State<HomePage> {
   Widget _navLink(String label, int index) {
     final bool isActive = _activeNavIndex == index;
     return InkWell(
-      onTap: () => setState(() => _activeNavIndex = index),
+      onTap: () => _onNavChange(index),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Text(
