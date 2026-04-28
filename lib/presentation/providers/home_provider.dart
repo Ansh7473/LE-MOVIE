@@ -19,9 +19,6 @@ class HomeProvider extends ChangeNotifier {
   List<MovieModel> _upcomingMovies = [];
   List<MovieModel> get upcomingMovies => _upcomingMovies;
 
-  List<MovieModel> _nowPlayingMovies = [];
-  List<MovieModel> get nowPlayingMovies => _nowPlayingMovies;
-
   List<MovieModel> _topRatedMovies = [];
   List<MovieModel> get topRatedMovies => _topRatedMovies;
 
@@ -30,6 +27,13 @@ class HomeProvider extends ChangeNotifier {
 
   List<MovieModel> _topRatedTV = [];
   List<MovieModel> get topRatedTV => _topRatedTV;
+
+  // New Specific Genre Lists
+  List<MovieModel> _animationMovies = [];
+  List<MovieModel> get animationMovies => _animationMovies;
+
+  List<MovieModel> _horrorMovies = [];
+  List<MovieModel> get horrorMovies => _horrorMovies;
 
   List<Map<String, dynamic>> _movieGenres = [];
   List<Map<String, dynamic>> get movieGenres => _movieGenres;
@@ -62,9 +66,11 @@ class HomeProvider extends ChangeNotifier {
         _movieService.getPopularMovies(language: language),
         _movieService.getPopularTV(language: language),
         _movieService.getUpcomingMovies(language: language),
-        _movieService.getNowPlayingMovies(language: language),
         _movieService.getTopRatedMovies(language: language),
         _movieService.getTopRatedTV(language: language),
+        // Fetch Animation (16) and Horror (27)
+        _movieService.getDiscoverByGenre(false, 16, language: language),
+        _movieService.getDiscoverByGenre(false, 27, language: language),
       ]);
 
       _trendingMovies = results[0];
@@ -72,9 +78,10 @@ class HomeProvider extends ChangeNotifier {
       _popularMovies = results[2];
       _popularTV = results[3];
       _upcomingMovies = results[4];
-      _nowPlayingMovies = results[5];
-      _topRatedMovies = results[6];
-      _topRatedTV = results[7];
+      _topRatedMovies = results[5];
+      _topRatedTV = results[6];
+      _animationMovies = results[7];
+      _horrorMovies = results[8];
     } catch (e) {
       print('Home Init Error: $e');
     }

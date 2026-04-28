@@ -128,7 +128,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               
-              // TV Series Section - Using TrendingTV for "Latest" feel
+              // TV Series Section
               _buildSectionTitle('Trending Series'),
               const SizedBox(height: 20),
               _buildHorizontalList(context, homeProv.trendingTV, isTv: true, isDesktop: isDesktop, delay: 0),
@@ -147,6 +147,18 @@ class _HomePageState extends State<HomePage> {
               _buildSectionTitle('Global Favorites'),
               const SizedBox(height: 20),
               _buildHorizontalList(context, homeProv.topRatedMovies, isTv: false, isDesktop: isDesktop, delay: 600),
+
+              const SizedBox(height: 50),
+              // NEW: Animation Section
+              _buildSectionTitle('Animated Adventures'),
+              const SizedBox(height: 20),
+              _buildHorizontalList(context, homeProv.animationMovies, isTv: false, isDesktop: isDesktop, delay: 800),
+
+              const SizedBox(height: 50),
+              // NEW: Horror Section
+              _buildSectionTitle('Midnight Horrors'),
+              const SizedBox(height: 20),
+              _buildHorizontalList(context, homeProv.horrorMovies, isTv: false, isDesktop: isDesktop, delay: 1000),
             ],
           ),
         ),
