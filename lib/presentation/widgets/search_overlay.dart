@@ -89,7 +89,7 @@ class SearchOverlay extends StatelessWidget {
                                           width: 50,
                                           height: 75,
                                           fit: BoxFit.cover,
-                                          placeholder: (_, __) => Container(color: Colors.white05),
+                                          placeholder: (_, __) => Container(color: Colors.white10),
                                         ),
                                       ),
                                       const SizedBox(width: 20),
