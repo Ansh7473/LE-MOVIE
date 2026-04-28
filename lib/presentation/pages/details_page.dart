@@ -188,6 +188,8 @@ class _DetailsPageState extends State<DetailsPage> {
                 children: [
                   if (streamProv.isLoading && streamProv.availableStreams.isEmpty)
                     _buildShimmer()
+                  else if (!streamProv.isLoading && streamProv.availableStreams.isEmpty)
+                    _buildNoStreams()
                   else ...[
                     // TV Specific: Seasons & Episodes
                     if (widget.isTv && tvDetails != null) ...[
@@ -273,9 +275,7 @@ class _DetailsPageState extends State<DetailsPage> {
                     ],
 
                     // Server Selection
-                    if (streamProv.isLoading && streamProv.selectedStream == null)
-                      _buildServerShimmer()
-                    else if (streamProv.availableStreams.isNotEmpty) ...[
+                    if (streamProv.availableStreams.isNotEmpty) ...[
                       _sectionLabel('SELECT SERVER'),
                       const SizedBox(height: 20),
                       ListView.separated(
@@ -345,8 +345,7 @@ class _DetailsPageState extends State<DetailsPage> {
                         },
                       ),
                     ],
-                  ] else if (!streamProv.isLoading)
-                    _buildNoStreams(),
+                  ],
                 ],
               ),
             ),
