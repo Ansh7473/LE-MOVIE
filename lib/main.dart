@@ -41,14 +41,20 @@ class LeMovieApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F),
-        primaryColor: const Color(0xFFE50914), // Premium Red
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFE50914),
-          secondary: Color(0xFF222222),
-          surface: Color(0xFF1A1A1A),
+        scaffoldBackgroundColor: Colors.black, // Proper Black
+        primaryColor: const Color(0xFF00D1FF), // Matte Cyan
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+          displayLarge: const TextStyle(letterSpacing: -1.2, fontWeight: FontWeight.w800),
+          titleLarge: const TextStyle(letterSpacing: -0.5, fontWeight: FontWeight.w600),
         ),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF00D1FF),
+          secondary: Color(0xFF00D1FF), 
+          surface: Color(0xFF0D0D0D), // Matte surface
+          background: Colors.black,
+        ),
+        useMaterial3: true,
+        dividerColor: Colors.white10,
       ),
       home: const HomePage(),
     );
