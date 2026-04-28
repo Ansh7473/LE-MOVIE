@@ -44,25 +44,32 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
+      body: Stack(
         children: [
-          // Navigation
-          _buildTopNavigationBar(isDesktop, horizontalPadding, langProv),
+          Column(
+            children: [
+              // Navigation
+              _buildTopNavigationBar(isDesktop, horizontalPadding, langProv),
 
-          // Scrollable Content
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildActiveView(homeProv, isDesktop, horizontalPadding),
-                  const SizedBox(height: 60),
-                  _buildMegaFooter(isDesktop, horizontalPadding),
-                ],
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildActiveView(homeProv, isDesktop, horizontalPadding),
+                      const SizedBox(height: 60),
+                      _buildMegaFooter(isDesktop, horizontalPadding),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+          
+          // Search Results Overlay
+          const SearchOverlay(),
         ],
       ),
     );
@@ -112,24 +119,26 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              _buildSectionTitle('Trending Movies'),
-              const SizedBox(height: 20),
-              _buildHorizontalList(context, homeProv.trendingMovies, isTv: false, isDesktop: isDesktop),
               
-              const SizedBox(height: 50),
+              // TV Series Section moved to TOP as requested
               _buildSectionTitle('Binge-worthy Series'),
               const SizedBox(height: 20),
-              _buildHorizontalList(context, homeProv.topRatedTV, isTv: true, isDesktop: isDesktop),
+              _buildHorizontalList(context, homeProv.topRatedTV, isTv: true, isDesktop: isDesktop, delay: 0),
+
+              const SizedBox(height: 50),
+              _buildSectionTitle('Trending Movies'),
+              const SizedBox(height: 20),
+              _buildHorizontalList(context, homeProv.trendingMovies, isTv: false, isDesktop: isDesktop, delay: 200),
               
               const SizedBox(height: 50),
               _buildSectionTitle('Latest Releases'),
               const SizedBox(height: 20),
-              _buildHorizontalList(context, homeProv.upcomingMovies, isTv: false, isDesktop: isDesktop),
+              _buildHorizontalList(context, homeProv.upcomingMovies, isTv: false, isDesktop: isDesktop, delay: 400),
               
               const SizedBox(height: 50),
               _buildSectionTitle('Global Favorites'),
               const SizedBox(height: 20),
-              _buildHorizontalList(context, homeProv.topRatedMovies, isTv: false, isDesktop: isDesktop),
+              _buildHorizontalList(context, homeProv.topRatedMovies, isTv: false, isDesktop: isDesktop, delay: 600),
             ],
           ),
         ),
@@ -254,28 +263,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHorizontalList(BuildContext context, List items, {required bool isTv, required bool isDesktop}) {
+  Widget _buildHorizontalList(BuildContext context, List items, {required bool isTv, required bool isDesktop, int delay = 0}) {
     final double cardWidth = isDesktop ? 160 : 130;
     final double cardHeight = isDesktop ? 240 : 195;
     
-    return SizedBox(
-      height: cardHeight + 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: _MovieCard(
-              item: item,
-              width: cardWidth,
-              height: cardHeight,
-              isTv: isTv,
-            ),
-          );
-        },
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 600 + delay),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(40 * (1 - value), 0),
+            child: child,
+          ),
+        );
+      },
+      child: SizedBox(
+        height: cardHeight + 40,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: _MovieCard(
+                item: item,
+                width: cardWidth,
+                height: cardHeight,
+                isTv: isTv,
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -564,13 +587,17 @@ class _MovieCardState extends State<_MovieCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 width: widget.width,
                 height: widget.height,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
                   color: Colors.white10,
-                  border: Border.all(color: _isHovered ? Colors.white24 : Colors.transparent),
+                  boxShadow: _isHovered ? [
+                    BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.3), blurRadius: 15, spreadRadius: -5)
+                  ] : [],
+                  border: Border.all(color: _isHovered ? Colors.white38 : Colors.transparent),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
@@ -588,7 +615,12 @@ class _MovieCardState extends State<_MovieCard> {
                   widget.item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
+                  style: TextStyle(
+                    fontSize: 12, 
+                    fontWeight: FontWeight.bold, 
+                    color: _isHovered ? Colors.white : Colors.white70, 
+                    letterSpacing: 0.5
+                  ),
                 ),
               ),
             ],
@@ -661,12 +693,24 @@ class _HeroCarouselState extends State<HeroCarousel> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Backdrop Image
-                    CachedNetworkImage(
-                      imageUrl: item.fullBackdropPath,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      placeholder: (context, url) => Container(color: Colors.black),
+                    // Backdrop Image with Parallax
+                    AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        double offset = 0;
+                        if (_pageController.hasClients) {
+                          offset = (_pageController.page ?? 0) - index;
+                        }
+                        return Transform.translate(
+                          offset: Offset(offset * 100, 0),
+                          child: CachedNetworkImage(
+                            imageUrl: item.fullBackdropPath,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.topCenter,
+                            placeholder: (context, url) => Container(color: Colors.black),
+                          ),
+                        );
+                      },
                     ),
                     
                     // Matte Overlay
@@ -702,6 +746,9 @@ class _HeroCarouselState extends State<HeroCarousel> {
                             decoration: BoxDecoration(
                               color: Theme.of(context).primaryColor,
                               borderRadius: BorderRadius.circular(4),
+                              boxShadow: [
+                                BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.5), blurRadius: 10)
+                              ],
                             ),
                             child: const Text(
                               'HOT NOW',
@@ -716,14 +763,20 @@ class _HeroCarouselState extends State<HeroCarousel> {
                           const SizedBox(height: 16),
                           SizedBox(
                             width: widget.isDesktop ? 700 : double.infinity,
-                            child: Text(
-                              item.title.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: widget.isDesktop ? 56 : 32,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -1,
-                                height: 1,
+                            child: Hero(
+                              tag: 'title-${item.id}',
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Text(
+                                  item.title.toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: widget.isDesktop ? 56 : 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                    height: 1,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -783,7 +836,8 @@ class _HeroCarouselState extends State<HeroCarousel> {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(4),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
           horizontal: widget.isDesktop ? 28 : 20,
           vertical: widget.isDesktop ? 14 : 10,
@@ -792,6 +846,9 @@ class _HeroCarouselState extends State<HeroCarousel> {
           color: isPrimary ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: isPrimary ? null : Border.all(color: Colors.white24),
+          boxShadow: isPrimary ? [
+            BoxShadow(color: Colors.white.withOpacity(0.2), blurRadius: 10)
+          ] : [],
         ),
         child: Row(
           children: [
